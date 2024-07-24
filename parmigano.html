@@ -3,13 +3,13 @@
 <head>
   <title>AR Example</title>
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-  <script src="https://rawgit.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 </head>
 <body style="margin: 0; overflow: hidden;">
   <a-scene embedded arjs>
     <a-marker preset="hiro">
-      <!-- Замените src на путь к вашей 3D-модели -->
-      <a-entity gltf-model="url(https://example.com/model.gltf)" scale="0.5 0.5 0.5"></a-entity>
+      <!-- Убедитесь, что путь к файлу модели верный -->
+      <a-entity obj-model="obj: url(pizza.obj)" scale="0.5 0.5 0.5"></a-entity>
     </a-marker>
     <a-entity camera></a-entity>
   </a-scene>
