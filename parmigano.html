@@ -2,61 +2,65 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>AR Test with Plane Detection</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/AR.js@1.7.2/aframe/build/aframe-ar.js"></script>
+    <title>AR Plane Detection with WebXR</title>
     <style>
         body { margin: 0; }
-        a-scene { height: 100vh; }
+        canvas { display: block; }
     </style>
 </head>
 <body>
-    <a-scene embedded arjs='sourceType: webcam;'>
-        <!-- Камера для AR -->
-        <a-camera></a-camera>
-
-        <!-- Куб, который будет отображаться на плоскости -->
-        <a-box id="box" position="0 0 -2" rotation="0 0 0" color="red"></a-box>
-
-        <!-- Плоскость для AR-детектора -->
-        <a-entity id="ar-plane" geometry="primitive: plane; width: 1; height: 1" material="color: blue; opacity: 0.5" visible="false"></a-entity>
-    </a-scene>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/VRButton.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@webxr/aframe@1.2.0/dist/aframe.min.js"></script>
     <script>
-        AFRAME.registerComponent('plane-detector', {
-            init: function () {
-                var sceneEl = document.querySelector('a-scene');
-                var boxEl = document.querySelector('#box');
-                var arPlaneEl = document.querySelector('#ar-plane');
+        let scene, camera, renderer, box, controller, session;
 
-                var arController = sceneEl.systems['arjs'].arController;
+        function init() {
+            // Создаем сцену и камеру
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-                arController.addEventListener('load', function () {
-                    arController.addEventListener('update', function () {
-                        var detectedPlanes = arController.getDetectedPlanes();
+            // Настраиваем рендерер и добавляем VR-кнопку
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+            document.body.appendChild(VRButton.createButton(renderer));
 
-                        if (detectedPlanes.length > 0) {
-                            var planeData = detectedPlanes[0];
-                            var position = planeData.position;
-                            var rotation = planeData.rotation;
+            // Добавляем куб
+            const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            box = new THREE.Mesh(geometry, material);
+            scene.add(box);
 
-                            // Позиционируем плоскость на найденной плоскости
-                            arPlaneEl.object3D.position.set(position.x, position.y, position.z);
-                            arPlaneEl.object3D.rotation.set(rotation.x, rotation.y, rotation.z);
-                            arPlaneEl.setAttribute('visible', 'true');
+            // Настраиваем контроллер для взаимодействия
+            controller = new THREE.WebXRButton(renderer, { optionalFeatures: ['hit-test'] });
+            scene.add(controller);
 
-                            // Позиционируем куб на плоскости
-                            boxEl.setAttribute('position', `${position.x} ${position.y + 0.5} ${position.z}`);
-                        } else {
-                            arPlaneEl.setAttribute('visible', 'false');
-                        }
-                    });
+            // Настраиваем события для обнаружения плоскостей
+            renderer.xr.addEventListener('sessionstart', function (event) {
+                session = event.target;
+                session.requestReferenceSpace('plane').then(function (referenceSpace) {
+                    session.updateWorldTracking(referenceSpace);
                 });
-            }
-        });
+            });
 
-        // Регистрация компонента перед сценой
-        document.querySelector('a-scene').setAttribute('plane-detector', '');
+            // Анимация
+            animate();
+        }
+
+        function animate() {
+            renderer.setAnimationLoop(function (time) {
+                renderer.render(scene, camera);
+            });
+        }
+
+        init();
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
     </script>
 </body>
 </html>
