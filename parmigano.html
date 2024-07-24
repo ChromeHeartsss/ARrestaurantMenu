@@ -12,17 +12,14 @@
 </head>
 <body>
     <a-scene embedded arjs='sourceType: webcam;'>
-        <!-- Камера и сцена для AR -->
+        <!-- Камера для AR -->
         <a-camera></a-camera>
 
         <!-- Куб, который будет отображаться на плоскости -->
-        <a-box id="box" position="0 0 0" rotation="0 0 0" color="red"></a-box>
-
-        <!-- Плоскость, служащая для отладки -->
-        <a-plane id="plane" width="1" height="1" color="blue" opacity="0.5" visible="false"></a-plane>
+        <a-box id="box" position="0 0 -2" rotation="0 0 0" color="red"></a-box>
 
         <!-- Плоскость для AR-детектора -->
-        <a-entity id="ground" geometry="primitive: plane; width: 100; height: 100" material="color: grey" position="0 0 -5"></a-entity>
+        <a-entity id="ar-plane" geometry="primitive: plane; width: 1; height: 1" material="color: blue; opacity: 0.5" visible="false"></a-entity>
     </a-scene>
 
     <script>
@@ -30,33 +27,31 @@
             init: function () {
                 var sceneEl = document.querySelector('a-scene');
                 var boxEl = document.querySelector('#box');
-                var planeEl = document.querySelector('#plane');
-                
+                var arPlaneEl = document.querySelector('#ar-plane');
+
                 var arController = sceneEl.systems['arjs'].arController;
 
-                if (arController) {
-                    arController.addEventListener('load', function () {
-                        arController.addEventListener('update', function () {
-                            var detectedPlanes = arController.getDetectedPlanes();
+                arController.addEventListener('load', function () {
+                    arController.addEventListener('update', function () {
+                        var detectedPlanes = arController.getDetectedPlanes();
 
-                            if (detectedPlanes.length > 0) {
-                                var planeData = detectedPlanes[0];
-                                var position = planeData.position;
-                                var rotation = planeData.rotation;
+                        if (detectedPlanes.length > 0) {
+                            var planeData = detectedPlanes[0];
+                            var position = planeData.position;
+                            var rotation = planeData.rotation;
 
-                                // Позиционируем плоскость на найденной плоскости
-                                planeEl.object3D.position.set(position.x, position.y, position.z);
-                                planeEl.object3D.rotation.set(rotation.x, rotation.y, rotation.z);
-                                planeEl.setAttribute('visible', 'true');
+                            // Позиционируем плоскость на найденной плоскости
+                            arPlaneEl.object3D.position.set(position.x, position.y, position.z);
+                            arPlaneEl.object3D.rotation.set(rotation.x, rotation.y, rotation.z);
+                            arPlaneEl.setAttribute('visible', 'true');
 
-                                // Позиционируем куб на плоскости
-                                boxEl.setAttribute('position', `${position.x} ${position.y + 0.5} ${position.z}`);
-                            } else {
-                                planeEl.setAttribute('visible', 'false');
-                            }
-                        });
+                            // Позиционируем куб на плоскости
+                            boxEl.setAttribute('position', `${position.x} ${position.y + 0.5} ${position.z}`);
+                        } else {
+                            arPlaneEl.setAttribute('visible', 'false');
+                        }
                     });
-                }
+                });
             }
         });
 
