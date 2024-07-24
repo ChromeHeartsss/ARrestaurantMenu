@@ -11,10 +11,10 @@
 </head>
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://unpkg.com/three.ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@webxr-input-profiles/builder@1.0.0/dist/builder.min.js"></script>
     <script>
         // Инициализация сцены
-        let scene, camera, renderer, ar, cube;
+        let scene, camera, renderer, cube;
         
         function init() {
             // Сцена
@@ -25,37 +25,34 @@
             camera.position.z = 5;
             
             // Рендерер
-            renderer = new THREE.WebGLRenderer();
+            renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
             
-            // Плоскость AR
-            ar = new THREE.ARRenderer();
-            ar.initialize();
-            ar.start();
-
             // Куб
             let geometry = new THREE.BoxGeometry();
             let material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
             cube = new THREE.Mesh(geometry, material);
             scene.add(cube);
             
+            // Подключаем WebXR
+            renderer.xr.enabled = true;
+            document.body.appendChild(renderer.domElement);
+            
             // Событие на обновление
             window.addEventListener('resize', onWindowResize, false);
             
+            // Запуск анимации
             animate();
         }
         
         function animate() {
-            requestAnimationFrame(animate);
-            
-            // Обновляем положение куба
-            if (ar.detectPlane()) {
-                let plane = ar.getPlane();
-                cube.position.set(plane.position.x, plane.position.y, plane.position.z);
-            }
-            
-            renderer.render(scene, camera);
+            renderer.setAnimationLoop(() => {
+                // Обновляем позицию куба (это место можно настроить, чтобы следить за плоскостью, если используете WebXR для AR)
+                
+                // Обновляем сцену
+                renderer.render(scene, camera);
+            });
         }
         
         function onWindowResize() {
