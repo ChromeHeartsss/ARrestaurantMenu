@@ -11,13 +11,13 @@
   </head>
   <body>
     <a-scene embedded arjs='sourceType: webcam;'>
-      <!-- Камера -->
+      <!-- Камера и контроллер AR -->
       <a-marker-camera preset="hiro"></a-marker-camera>
-      
-      <!-- Настройка куба -->
-      <a-box id="box" position="0 0 0" rotation="0 0 0" color="red"></a-box>
 
-      <!-- Плоскость для отладки (может быть скрыта) -->
+      <!-- Куб, который будет отображаться на плоскости -->
+      <a-box id="box" position="0 0 0" rotation="0 0 0" color="red"></a-box>
+      
+      <!-- Плоскость для отладки (можно скрыть при необходимости) -->
       <a-plane id="plane" width="1" height="1" color="blue" opacity="0.5" visible="false"></a-plane>
 
     </a-scene>
@@ -25,27 +25,28 @@
     <script>
       AFRAME.registerComponent('plane-detector', {
         init: function () {
-          var scene = document.querySelector('a-scene');
-          var box = document.querySelector('#box');
-          var plane = document.querySelector('#plane');
-          var arController = scene.systems['arjs'].arController;
+          var sceneEl = document.querySelector('a-scene');
+          var boxEl = document.querySelector('#box');
+          var planeEl = document.querySelector('#plane');
+          var arController = sceneEl.systems['arjs'].arController;
 
           if (arController) {
             arController.addEventListener('load', function () {
               arController.addEventListener('update', function () {
-                // Определяем и устанавливаем позицию плоскости
-                var planes = arController.getDetectedPlanes();
-                if (planes.length > 0) {
-                  var planeData = planes[0];
-                  
-                  // Устанавливаем позицию плоскости
-                  plane.object3D.position.set(planeData.position.x, planeData.position.y, planeData.position.z);
-                  plane.setAttribute('visible', 'true');
-                  
+                // Получаем информацию о плоскостях
+                var detectedPlanes = arController.getDetectedPlanes();
+
+                if (detectedPlanes.length > 0) {
+                  var planeData = detectedPlanes[0];
+
+                  // Размещаем плоскость на найденной плоскости
+                  planeEl.object3D.position.set(planeData.position.x, planeData.position.y, planeData.position.z);
+                  planeEl.setAttribute('visible', 'true');
+
                   // Размещаем куб на плоскости
-                  box.setAttribute('position', `${planeData.position.x} ${planeData.position.y + 0.5} ${planeData.position.z}`);
+                  boxEl.setAttribute('position', `${planeData.position.x} ${planeData.position.y + 0.5} ${planeData.position.z}`);
                 } else {
-                  plane.setAttribute('visible', 'false');
+                  planeEl.setAttribute('visible', 'false');
                 }
               });
             });
@@ -53,6 +54,7 @@
         }
       });
 
+      // Регистрируем компонент перед сцены
       document.querySelector('a-scene').setAttribute('plane-detector', '');
     </script>
   </body>
