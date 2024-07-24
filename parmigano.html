@@ -23,12 +23,21 @@
       }
     });
   
-    AFRAME.registerComponent('check-entity', {
-      init: function () {
-        console.log('Entity initialized:', this.el);
-      }
+    // Проверка состояния камеры
+    document.querySelector('a-entity[camera]').addEventListener('loaded', function () {
+      console.log('Camera component loaded');
+    });
+  
+    // Проверка состояния маркера
+    document.querySelector('a-marker').addEventListener('markerFound', function () {
+      console.log('Marker found');
+    });
+  
+    document.querySelector('a-marker').addEventListener('markerLost', function () {
+      console.log('Marker lost');
     });
   </script>
+  
   
 </body>
 </html>
