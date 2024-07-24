@@ -6,21 +6,34 @@
     <title>AR Plane Detection Example</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar-plane.js"></script>
     <style>
         body { margin: 0; }
     </style>
 </head>
 <body>
-    <a-scene embedded arjs='sourceType: webcam; debugUIEnabled: false;'>
-        <!-- This marker will be used to position the 3D model on the detected plane -->
+    <a-scene embedded arjs='sourceType: webcam; debugUIEnabled: false;' arjs-plane-detection>
+        <a-plane width="1" height="1" color="#CCC" rotation="-90 0 0"></a-plane>
+        
+        <!-- Plane marker -->
         <a-marker type="pattern" url="path/to/your-marker.patt">
             <a-entity gltf-model="url(https://cdn.glitch.com/07ee83c8-ef68-4a77-b0b8-9c7d2305f4c4%2Fmodel.glb?v=1637009331232)"
                       scale="0.5 0.5 0.5"
                       position="0 0 0">
             </a-entity>
         </a-marker>
-
+        
         <a-entity camera></a-entity>
     </a-scene>
+
+    <script>
+        document.addEventListener('click', function() {
+            // Инициализация WebXR после клика пользователя
+            const scene = document.querySelector('a-scene');
+            if (scene && scene.hasLoaded) {
+                scene.enterVR();
+            }
+        });
+    </script>
 </body>
 </html>
