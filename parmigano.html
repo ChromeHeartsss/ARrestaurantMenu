@@ -2,77 +2,33 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>AR with Three.js and WebXR</title>
+    <title>WebXR Support Check</title>
     <style>
         body { margin: 0; }
-        canvas { display: block; }
     </style>
 </head>
 <body>
     <button id="startAR">Start AR</button>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <p id="status"></p>
     <script>
-        let renderer, scene, camera, cube;
-
-        async function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
-
-            // Add a basic cube to the scene
-            const geometry = new THREE.BoxGeometry();
-            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-            cube = new THREE.Mesh(geometry, material);
-            scene.add(cube);
-
-            // Position the camera
-            camera.position.z = 5;
-
-            // Set up animation
-            function animate() {
-                renderer.setAnimationLoop(() => {
-                    renderer.render(scene, camera);
-                });
-            }
-
-            // Check WebXR support and initiate AR session
-            document.getElementById('startAR').addEventListener('click', async () => {
-                if (navigator.xr) {
-                    try {
-                        const supported = await navigator.xr.isSessionSupported('immersive-ar');
-                        if (supported) {
-                            const session = await navigator.xr.requestSession('immersive-ar', {
-                                requiredFeatures: ['hit-test', 'local-floor']
-                            });
-
-                            renderer.xr.setSession(session);
-                            animate();
-
-                            const hitTestSource = await session.requestHitTestSource({ profile: 'unified' });
-                            session.addEventListener('select', async () => {
-                                const hitTestResults = await session.requestHitTest();
-                                if (hitTestResults.length > 0) {
-                                    const hit = hitTestResults[0];
-                                    const hitPose = hit.getPose(renderer.xr.getCamera(camera).projectionMatrix);
-                                    const hitMatrix = new THREE.Matrix4().fromArray(hitPose.transform.matrix);
-                                    cube.position.setFromMatrixPosition(hitMatrix);
-                                }
-                            });
-                        } else {
-                            alert('Immersive AR is not supported on this device.');
-                        }
-                    } catch (error) {
-                        console.error('Error starting AR session:', error);
+        document.getElementById('startAR').addEventListener('click', async () => {
+            const statusElement = document.getElementById('status');
+            
+            if (navigator.xr) {
+                try {
+                    const supported = await navigator.xr.isSessionSupported('immersive-ar');
+                    if (supported) {
+                        statusElement.textContent = 'Immersive AR is supported on this device!';
+                    } else {
+                        statusElement.textContent = 'Immersive AR is not supported on this device.';
                     }
-                } else {
-                    alert('WebXR is not supported.');
+                } catch (error) {
+                    statusElement.textContent = 'Error checking AR support: ' + error.message;
                 }
-            });
-        }
-
-        init();
+            } else {
+                statusElement.textContent = 'WebXR is not supported.';
+            }
+        });
     </script>
 </body>
 </html>
