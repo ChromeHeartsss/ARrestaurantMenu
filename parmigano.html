@@ -6,38 +6,11 @@
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 </head>
 <body style="margin: 0; overflow: hidden;">
-  <a-scene embedded arjs>
+  <a-scene embedded arjs='sourceType: webcam;'>
     <a-marker preset="hiro">
-        <a-entity obj-model="obj: url(https://chromeheartsss.github.io/ARrestaurantMenu/parmigano.html/Pizza.obj)" scale="0.5 0.5 0.5" id="pizzaModel"></a-entity>
+      <a-entity geometry="primitive: box" material="color: red" scale="0.5 0.5 0.5"></a-entity>
     </a-marker>
     <a-entity camera></a-entity>
   </a-scene>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOM fully loaded and parsed');
-      var pizzaModel = document.getElementById('pizzaModel');
-      if (pizzaModel) {
-        console.log('Pizza model loaded');
-      } else {
-        console.log('Pizza model not found');
-      }
-    });
-  
-    // Проверка состояния камеры
-    document.querySelector('a-entity[camera]').addEventListener('loaded', function () {
-      console.log('Camera component loaded');
-    });
-  
-    // Проверка состояния маркера
-    document.querySelector('a-marker').addEventListener('markerFound', function () {
-      console.log('Marker found');
-    });
-  
-    document.querySelector('a-marker').addEventListener('markerLost', function () {
-      console.log('Marker lost');
-    });
-  </script>
-  
-  
 </body>
 </html>
