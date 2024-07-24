@@ -4,40 +4,45 @@
     <meta charset="utf-8">
     <title>AR Test</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.7.2/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/AR.js@1.7.2/aframe/build/aframe-ar.js"></script>
     <style>
       body { margin: 0; }
-      #arjs-debug { display: none; }
     </style>
   </head>
   <body>
-    <a-scene embedded arjs>
-      <!-- Настройка камеры -->
+    <a-scene embedded arjs='sourceType: webcam;'>
+      <!-- Камера -->
       <a-marker-camera preset="hiro"></a-marker-camera>
-      <!-- Настройка плоскости -->
-      <a-entity id="plane" geometry="primitive: plane; width: 1; height: 1" material="color: blue; opacity: 0.5" position="0 0 0" visible="false"></a-entity>
-      <!-- Куб, который будет размещаться на плоскости -->
-      <a-box position="0 0.5 0" rotation="0 45 0" color="red"></a-box>
+      
+      <!-- Настройка куба -->
+      <a-box id="box" position="0 0 0" rotation="0 0 0" color="red"></a-box>
+
+      <!-- Плоскость для отладки (может быть скрыта) -->
+      <a-plane id="plane" width="1" height="1" color="blue" opacity="0.5" visible="false"></a-plane>
+
     </a-scene>
 
     <script>
       AFRAME.registerComponent('plane-detector', {
         init: function () {
           var scene = document.querySelector('a-scene');
-          var plane = document.getElementById('plane');
-          var box = document.querySelector('a-box');
+          var box = document.querySelector('#box');
+          var plane = document.querySelector('#plane');
           var arController = scene.systems['arjs'].arController;
 
           if (arController) {
             arController.addEventListener('load', function () {
               arController.addEventListener('update', function () {
-                // Метод для определения и установки позиции плоскости
+                // Определяем и устанавливаем позицию плоскости
                 var planes = arController.getDetectedPlanes();
                 if (planes.length > 0) {
                   var planeData = planes[0];
+                  
+                  // Устанавливаем позицию плоскости
                   plane.object3D.position.set(planeData.position.x, planeData.position.y, planeData.position.z);
                   plane.setAttribute('visible', 'true');
-                  // Позиционирование куба на плоскости
+                  
+                  // Размещаем куб на плоскости
                   box.setAttribute('position', `${planeData.position.x} ${planeData.position.y + 0.5} ${planeData.position.z}`);
                 } else {
                   plane.setAttribute('visible', 'false');
