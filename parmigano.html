@@ -13,54 +13,59 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@webxr-input-profiles/builder@1.0.0/dist/builder.min.js"></script>
     <script>
-        // Инициализация сцены
         let scene, camera, renderer, cube;
-        
+
         function init() {
-            // Сцена
+            // Создание сцены
             scene = new THREE.Scene();
-            
-            // Камера
+
+            // Создание камеры
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.z = 5;
-            
-            // Рендерер
+
+            // Создание рендерера
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
-            
-            // Куб
+
+            // Создание куба
             let geometry = new THREE.BoxGeometry();
             let material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
             cube = new THREE.Mesh(geometry, material);
             scene.add(cube);
-            
-            // Подключаем WebXR
+
+            // Настройка WebXR для AR
             renderer.xr.enabled = true;
-            document.body.appendChild(renderer.domElement);
-            
-            // Событие на обновление
+
+            // Добавление контроля за устройствами ввода
+            navigator.xr.requestDevice()
+                .then(device => {
+                    return device.requestSession({ immersive: true });
+                })
+                .then(session => {
+                    renderer.xr.setSession(session);
+                    animate();
+                });
+
+            // Обработка изменения размеров окна
             window.addEventListener('resize', onWindowResize, false);
-            
-            // Запуск анимации
-            animate();
         }
-        
+
         function animate() {
             renderer.setAnimationLoop(() => {
-                // Обновляем позицию куба (это место можно настроить, чтобы следить за плоскостью, если используете WebXR для AR)
-                
-                // Обновляем сцену
+                // Обновление куба и сцены
+                cube.rotation.x += 0.01;
+                cube.rotation.y += 0.01;
                 renderer.render(scene, camera);
             });
         }
-        
+
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
-        
+
         init();
     </script>
 </body>
