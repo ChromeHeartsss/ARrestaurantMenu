@@ -1,61 +1,65 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="utf-8">
-    <title>AR Test</title>
+    <title>AR Test with Plane Detection</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/AR.js@1.7.2/aframe/build/aframe-ar.js"></script>
     <style>
-      body { margin: 0; }
+        body { margin: 0; }
+        a-scene { height: 100vh; }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <a-scene embedded arjs='sourceType: webcam;'>
-      <!-- Камера и контроллер AR -->
-      <a-marker-camera preset="hiro"></a-marker-camera>
+        <!-- AR камера и сцена -->
+        <a-marker-camera preset="hiro"></a-marker-camera>
 
-      <!-- Куб, который будет отображаться на плоскости -->
-      <a-box id="box" position="0 0 0" rotation="0 0 0" color="red"></a-box>
-      
-      <!-- Плоскость для отладки (можно скрыть при необходимости) -->
-      <a-plane id="plane" width="1" height="1" color="blue" opacity="0.5" visible="false"></a-plane>
+        <!-- Куб, который будет отображаться на плоскости -->
+        <a-box id="box" position="0 0 0" rotation="0 0 0" color="red"></a-box>
 
+        <!-- Плоскость для отладки -->
+        <a-plane id="plane" width="1" height="1" color="blue" opacity="0.5" visible="false"></a-plane>
+
+        <!-- Земля (основание сцены) -->
+        <a-entity id="ground" geometry="primitive: plane; width: 100; height: 100" material="color: grey" position="0 0 -5"></a-entity>
     </a-scene>
 
     <script>
-      AFRAME.registerComponent('plane-detector', {
-        init: function () {
-          var sceneEl = document.querySelector('a-scene');
-          var boxEl = document.querySelector('#box');
-          var planeEl = document.querySelector('#plane');
-          var arController = sceneEl.systems['arjs'].arController;
+        AFRAME.registerComponent('plane-detector', {
+            init: function () {
+                var sceneEl = document.querySelector('a-scene');
+                var boxEl = document.querySelector('#box');
+                var planeEl = document.querySelector('#plane');
+                var arController = sceneEl.systems['arjs'].arController;
 
-          if (arController) {
-            arController.addEventListener('load', function () {
-              arController.addEventListener('update', function () {
-                // Получаем информацию о плоскостях
-                var detectedPlanes = arController.getDetectedPlanes();
+                if (arController) {
+                    arController.addEventListener('load', function () {
+                        arController.addEventListener('update', function () {
+                            // Получаем информацию о плоскостях
+                            var detectedPlanes = arController.getDetectedPlanes();
 
-                if (detectedPlanes.length > 0) {
-                  var planeData = detectedPlanes[0];
+                            if (detectedPlanes.length > 0) {
+                                var planeData = detectedPlanes[0];
+                                var position = planeData.position;
 
-                  // Размещаем плоскость на найденной плоскости
-                  planeEl.object3D.position.set(planeData.position.x, planeData.position.y, planeData.position.z);
-                  planeEl.setAttribute('visible', 'true');
+                                // Размещаем плоскость на найденной плоскости
+                                planeEl.object3D.position.set(position.x, position.y, position.z);
+                                planeEl.setAttribute('visible', 'true');
 
-                  // Размещаем куб на плоскости
-                  boxEl.setAttribute('position', `${planeData.position.x} ${planeData.position.y + 0.5} ${planeData.position.z}`);
-                } else {
-                  planeEl.setAttribute('visible', 'false');
+                                // Размещаем куб на плоскости
+                                boxEl.setAttribute('position', `${position.x} ${position.y + 0.5} ${position.z}`);
+                            } else {
+                                planeEl.setAttribute('visible', 'false');
+                            }
+                        });
+                    });
                 }
-              });
-            });
-          }
-        }
-      });
+            }
+        });
 
-      // Регистрируем компонент перед сцены
-      document.querySelector('a-scene').setAttribute('plane-detector', '');
+        // Регистрируем компонент перед сценой
+        document.querySelector('a-scene').setAttribute('plane-detector', '');
     </script>
-  </body>
+</body>
 </html>
