@@ -43,31 +43,40 @@
             // Start the AR session on button click
             document.getElementById('startAR').addEventListener('click', () => {
                 if (navigator.xr) {
-                    navigator.xr.requestSession('immersive-ar', {
-                        requiredFeatures: ['hit-test', 'local-floor']
-                    }).then(session => {
-                        renderer.xr.setSession(session);
-                        animate();
+                    // Check if immersive-ar is supported
+                    navigator.xr.isSessionSupported('immersive-ar').then(supported => {
+                        if (supported) {
+                            navigator.xr.requestSession('immersive-ar', {
+                                requiredFeatures: ['hit-test', 'local-floor']
+                            }).then(session => {
+                                renderer.xr.setSession(session);
+                                animate();
 
-                        // Setup hit-test
-                        session.requestHitTestSource({ profile: 'unified' }).then(source => {
-                            session.addEventListener('select', () => {
-                                session.requestHitTest().then(hitTestResults => {
-                                    if (hitTestResults.length > 0) {
-                                        const hit = hitTestResults[0];
-                                        const hitPose = hit.getPose(renderer.xr.getCamera(camera).projectionMatrix);
-                                        const hitMatrix = new THREE.Matrix4().fromArray(hitPose.transform.matrix);
-                                        cube.position.setFromMatrixPosition(hitMatrix);
-                                    }
+                                // Setup hit-test
+                                session.requestHitTestSource({ profile: 'unified' }).then(source => {
+                                    session.addEventListener('select', () => {
+                                        session.requestHitTest().then(hitTestResults => {
+                                            if (hitTestResults.length > 0) {
+                                                const hit = hitTestResults[0];
+                                                const hitPose = hit.getPose(renderer.xr.getCamera(camera).projectionMatrix);
+                                                const hitMatrix = new THREE.Matrix4().fromArray(hitPose.transform.matrix);
+                                                cube.position.setFromMatrixPosition(hitMatrix);
+                                            }
+                                        }).catch(error => {
+                                            console.error('Error requesting hit test:', error);
+                                        });
+                                    });
                                 }).catch(error => {
-                                    console.error('Error requesting hit test:', error);
+                                    console.error('Error creating hit test source:', error);
                                 });
+                            }).catch(error => {
+                                console.error('Error starting AR session:', error);
                             });
-                        }).catch(error => {
-                            console.error('Error creating hit test source:', error);
-                        });
+                        } else {
+                            console.error('Immersive AR is not supported on this device.');
+                        }
                     }).catch(error => {
-                        console.error('Error starting AR session:', error);
+                        console.error('Error checking AR support:', error);
                     });
                 } else {
                     console.error('WebXR not supported');
