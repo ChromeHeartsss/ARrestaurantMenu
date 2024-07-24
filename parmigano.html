@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>AR with Three.js and WebXR</title>
+    <title>Simple AR Test</title>
     <style>
         body { margin: 0; }
         canvas { display: block; }
@@ -14,8 +14,7 @@
     <script>
         let renderer, scene, camera, cube;
 
-        // Initialize the scene, camera, and renderer
-        function init() {
+        async function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -38,51 +37,41 @@
                 });
             }
 
-            // Start the AR session on button click
-            document.getElementById('startAR').addEventListener('click', () => {
+            // Check WebXR support and initiate AR session
+            document.getElementById('startAR').addEventListener('click', async () => {
                 if (navigator.xr) {
-                    // Check if immersive-ar is supported
-                    navigator.xr.isSessionSupported('immersive-ar').then(supported => {
+                    try {
+                        const supported = await navigator.xr.isSessionSupported('immersive-ar');
                         if (supported) {
-                            navigator.xr.requestSession('immersive-ar', {
-                                requiredFeatures: ['hit-test', 'local-floor']
-                            }).then(session => {
-                                renderer.xr.setSession(session);
-                                animate();
+                            const session = await navigator.xr.requestSession('immersive-ar', {
+                                requiredFeatures: ['hit-test']
+                            });
 
-                                // Setup hit-test
-                                session.requestHitTestSource({ profile: 'unified' }).then(source => {
-                                    session.addEventListener('select', () => {
-                                        session.requestHitTest().then(hitTestResults => {
-                                            if (hitTestResults.length > 0) {
-                                                const hit = hitTestResults[0];
-                                                const hitPose = hit.getPose(renderer.xr.getCamera(camera).projectionMatrix);
-                                                const hitMatrix = new THREE.Matrix4().fromArray(hitPose.transform.matrix);
-                                                cube.position.setFromMatrixPosition(hitMatrix);
-                                            }
-                                        }).catch(error => {
-                                            console.error('Error requesting hit test:', error);
-                                        });
-                                    });
-                                }).catch(error => {
-                                    console.error('Error creating hit test source:', error);
-                                });
-                            }).catch(error => {
-                                console.error('Error starting AR session:', error);
+                            renderer.xr.setSession(session);
+                            animate();
+
+                            const hitTestSource = await session.requestHitTestSource({ profile: 'unified' });
+                            session.addEventListener('select', async () => {
+                                const hitTestResults = await session.requestHitTest();
+                                if (hitTestResults.length > 0) {
+                                    const hit = hitTestResults[0];
+                                    const hitPose = hit.getPose(renderer.xr.getCamera(camera).projectionMatrix);
+                                    const hitMatrix = new THREE.Matrix4().fromArray(hitPose.transform.matrix);
+                                    cube.position.setFromMatrixPosition(hitMatrix);
+                                }
                             });
                         } else {
                             console.error('Immersive AR is not supported on this device.');
                         }
-                    }).catch(error => {
-                        console.error('Error checking AR support:', error);
-                    });
+                    } catch (error) {
+                        console.error('Error starting AR session:', error);
+                    }
                 } else {
                     console.error('WebXR not supported');
                 }
             });
         }
 
-        // Initialize on page load
         init();
     </script>
 </body>
