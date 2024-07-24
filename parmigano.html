@@ -11,7 +11,6 @@
 <body>
     <button id="startAR">Start AR</button>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/VRButton.js"></script>
     <script>
         let renderer, scene, camera, cube;
 
@@ -22,7 +21,6 @@
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
-            document.body.appendChild(VRButton.createButton(renderer)); // Add VRButton for WebXR
 
             // Add a basic cube to the scene
             const geometry = new THREE.BoxGeometry();
