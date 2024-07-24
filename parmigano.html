@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR Surface Detection</title>
     <style>
         body { margin: 0; }
@@ -10,15 +11,16 @@
 </head>
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@webxr/ar-module.js"></script>
     <script>
-        let scene, camera, renderer, model;
+        let scene, camera, renderer, controller, reticle;
         let xrSession;
 
         async function init() {
             // Create scene
             scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 10);
+
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.xr.enabled = true;
@@ -27,37 +29,65 @@
             // Load a 3D model
             const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
             const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-            model = new THREE.Mesh(geometry, material);
+            const cube = new THREE.Mesh(geometry, material);
+            cube.name = 'cube';
 
-            // Request an XR session
-            xrSession = await navigator.xr.requestSession('immersive-ar', {
-                requiredFeatures: ['hit-test', 'local-floor']
-            });
-            renderer.xr.setSession(xrSession);
+            // Create reticle
+            const ringGeometry = new THREE.RingGeometry(0.05, 0.06, 32).rotateX(-Math.PI / 2);
+            const ringMaterial = new THREE.MeshBasicMaterial();
+            reticle = new THREE.Mesh(ringGeometry, ringMaterial);
+            reticle.matrixAutoUpdate = false;
+            reticle.visible = false;
+            scene.add(reticle);
 
-            xrSession.addEventListener('select', onSelect);
+            // Setup WebXR
+            if (navigator.xr) {
+                const sessionInit = { requiredFeatures: ['hit-test', 'local-floor'] };
+                xrSession = await navigator.xr.requestSession('immersive-ar', sessionInit);
+                renderer.xr.setSession(xrSession);
 
-            renderer.setAnimationLoop(render);
-        }
+                // Reference Space
+                const referenceSpace = await xrSession.requestReferenceSpace('local-floor');
 
-        function onSelect(event) {
-            const frame = event.frame;
-            const referenceSpace = xrSession.getReferenceSpace('local');
-            const hitTestSource = frame.getHitTestResultsForTransientInput({ profiles: ['generic-touchscreen'] });
+                xrSession.requestAnimationFrame((time, frame) => {
+                    // Bind AR hit test
+                    const viewerSpace = referenceSpace;
+                    const hitTestSource = frame.session.requestHitTestSource({
+                        space: viewerSpace
+                    });
+                });
 
-            if (hitTestSource.length > 0) {
-                const hit = hitTestSource[0];
-                const pose = hit.getPose(referenceSpace);
+                // Set up controller
+                controller = renderer.xr.getController(0);
+                controller.addEventListener('select', () => {
+                    if (reticle.visible) {
+                        const model = scene.getObjectByName('cube');
+                        model.position.setFromMatrixPosition(reticle.matrix);
+                        scene.add(model);
+                    }
+                });
+                scene.add(controller);
 
-                if (pose) {
-                    const { x, y, z } = pose.transform.position;
-                    model.position.set(x, y, z);
-                    scene.add(model);
-                }
+                renderer.setAnimationLoop(render);
             }
         }
 
         function render() {
+            if (reticle && xrSession) {
+                const frame = renderer.xr.getSession().requestAnimationFrame();
+                const referenceSpace = xrSession.requestReferenceSpace('local-floor');
+                const viewerSpace = frame.session.requestViewerSpace();
+
+                frame.getHitTestResultsForTransientInput(viewerSpace).then((results) => {
+                    if (results.length > 0) {
+                        const hit = results[0].results[0];
+                        reticle.visible = true;
+                        reticle.matrix.fromArray(hit.transform.matrix);
+                    } else {
+                        reticle.visible = false;
+                    }
+                });
+            }
             renderer.render(scene, camera);
         }
 
