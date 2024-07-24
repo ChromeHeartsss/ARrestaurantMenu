@@ -13,7 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/VRButton.js"></script>
     <script>
-        let renderer, scene, camera, cube, controller;
+        let renderer, scene, camera, cube;
 
         // Initialize the scene, camera, and renderer
         function init() {
@@ -22,57 +22,56 @@
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
-            
+            document.body.appendChild(VRButton.createButton(renderer)); // Add VRButton for WebXR
+
             // Add a basic cube to the scene
             const geometry = new THREE.BoxGeometry();
             const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
             cube = new THREE.Mesh(geometry, material);
             scene.add(cube);
-            
+
             // Position the camera
             camera.position.z = 5;
-            
-            // Setup AR tracking
-            controller = renderer.xr.getController(0);
-            scene.add(controller);
 
-            // Function to animate the scene
+            // Set up animation
             function animate() {
-                renderer.setAnimationLoop(function () {
-                    // Render the scene
+                renderer.setAnimationLoop(() => {
                     renderer.render(scene, camera);
                 });
             }
 
             // Start the AR session on button click
             document.getElementById('startAR').addEventListener('click', () => {
-                navigator.xr.requestSession('immersive-ar', {
-                    requiredFeatures: ['hit-test', 'local-floor']
-                }).then(function (session) {
-                    renderer.xr.setSession(session);
-                    animate();
-                    
-                    // Setup hit-test
-                    const hitTestSourceRequested = session.requestHitTestSource({ profile: 'unified' });
-                    hitTestSourceRequested.then(function (source) {
-                        session.addEventListener('select', function () {
-                            if (source) {
-                                session.requestHitTest().then(function (hitTestResults) {
+                if (navigator.xr) {
+                    navigator.xr.requestSession('immersive-ar', {
+                        requiredFeatures: ['hit-test', 'local-floor']
+                    }).then(session => {
+                        renderer.xr.setSession(session);
+                        animate();
+
+                        // Setup hit-test
+                        session.requestHitTestSource({ profile: 'unified' }).then(source => {
+                            session.addEventListener('select', () => {
+                                session.requestHitTest().then(hitTestResults => {
                                     if (hitTestResults.length > 0) {
                                         const hit = hitTestResults[0];
-                                        const hitPose = hit.getPose(scene.xr.getCamera(camera).projectionMatrix);
+                                        const hitPose = hit.getPose(renderer.xr.getCamera(camera).projectionMatrix);
                                         const hitMatrix = new THREE.Matrix4().fromArray(hitPose.transform.matrix);
                                         cube.position.setFromMatrixPosition(hitMatrix);
                                     }
+                                }).catch(error => {
+                                    console.error('Error requesting hit test:', error);
                                 });
-                            }
+                            });
+                        }).catch(error => {
+                            console.error('Error creating hit test source:', error);
                         });
-                    }).catch(function (error) {
-                        console.error('Failed to create hit test source:', error);
+                    }).catch(error => {
+                        console.error('Error starting AR session:', error);
                     });
-                }).catch(function (error) {
-                    console.error('AR session could not be started:', error);
-                });
+                } else {
+                    console.error('WebXR not supported');
+                }
             });
         }
 
