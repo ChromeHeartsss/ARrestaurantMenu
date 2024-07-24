@@ -1,66 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>AR Plane Detection with WebXR</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js AR Plane Detection</title>
     <style>
         body { margin: 0; }
-        canvas { display: block; }
+        canvas { width: 100%; height: 100%; display: block; }
     </style>
 </head>
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/VRButton.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@webxr/aframe@1.2.0/dist/aframe.min.js"></script>
+    <script src="https://unpkg.com/three.ar.js"></script>
     <script>
-        let scene, camera, renderer, box, controller, session;
-
+        // Инициализация сцены
+        let scene, camera, renderer, ar, cube;
+        
         function init() {
-            // Создаем сцену и камеру
+            // Сцена
             scene = new THREE.Scene();
+            
+            // Камера
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-            // Настраиваем рендерер и добавляем VR-кнопку
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            camera.position.z = 5;
+            
+            // Рендерер
+            renderer = new THREE.WebGLRenderer();
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
-            document.body.appendChild(VRButton.createButton(renderer));
+            
+            // Плоскость AR
+            ar = new THREE.ARRenderer();
+            ar.initialize();
+            ar.start();
 
-            // Добавляем куб
-            const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-            box = new THREE.Mesh(geometry, material);
-            scene.add(box);
-
-            // Настраиваем контроллер для взаимодействия
-            controller = new THREE.WebXRButton(renderer, { optionalFeatures: ['hit-test'] });
-            scene.add(controller);
-
-            // Настраиваем события для обнаружения плоскостей
-            renderer.xr.addEventListener('sessionstart', function (event) {
-                session = event.target;
-                session.requestReferenceSpace('plane').then(function (referenceSpace) {
-                    session.updateWorldTracking(referenceSpace);
-                });
-            });
-
-            // Анимация
+            // Куб
+            let geometry = new THREE.BoxGeometry();
+            let material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+            
+            // Событие на обновление
+            window.addEventListener('resize', onWindowResize, false);
+            
             animate();
         }
-
+        
         function animate() {
-            renderer.setAnimationLoop(function (time) {
-                renderer.render(scene, camera);
-            });
+            requestAnimationFrame(animate);
+            
+            // Обновляем положение куба
+            if (ar.detectPlane()) {
+                let plane = ar.getPlane();
+                cube.position.set(plane.position.x, plane.position.y, plane.position.z);
+            }
+            
+            renderer.render(scene, camera);
         }
-
-        init();
-
-        window.addEventListener('resize', () => {
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        
+        function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
-        });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        init();
     </script>
 </body>
 </html>
