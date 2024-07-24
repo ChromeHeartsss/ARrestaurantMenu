@@ -1,38 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR Plane Detection Example</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar-plane.js"></script>
-    <style>
-        body { margin: 0; }
-    </style>
 </head>
 <body>
-    <a-scene embedded arjs='sourceType: webcam; debugUIEnabled: false;' arjs-plane-detection>
-        <a-plane width="1" height="1" color="#CCC" rotation="-90 0 0"></a-plane>
-        
-        <!-- Plane marker -->
-        <a-marker type="pattern" url="path/to/your-marker.patt">
-            <a-entity gltf-model="url(https://chromeheartsss.github.io/ARrestaurantMenu/Pizza.glb)"
-                      scale="0.5 0.5 0.5"
-                      position="0 0 0">
-            </a-entity>
-        </a-marker>
-        
-        <a-entity camera></a-entity>
+    <a-scene embedded arjs='sourceType: webcam;'>
+        <!-- Настройка камеры для AR -->
+        <a-marker-camera></a-marker-camera>
+
+        <!-- Плоскостной детектор -->
+        <a-entity id="plane" 
+                  geometry="primitive: plane; height: 1; width: 1"
+                  material="color: #7BC8A4"
+                  position="0 0 0"
+                  visible="false"></a-entity>
+
+        <!-- 3D объект -->
+        <a-entity id="cube"
+                  geometry="primitive: box"
+                  material="color: #4CC3D9"
+                  position="0 0.5 0"
+                  rotation="0 45 0"></a-entity>
     </a-scene>
 
     <script>
-        document.addEventListener('click', function() {
-            // Инициализация WebXR после клика пользователя
-            const scene = document.querySelector('a-scene');
-            if (scene && scene.hasLoaded) {
-                scene.enterVR();
-            }
+        document.addEventListener('DOMContentLoaded', function() {
+            var scene = document.querySelector('a-scene');
+            var plane = document.querySelector('#plane');
+            var cube = document.querySelector('#cube');
+
+            scene.addEventListener('loaded', function() {
+                var arController = scene.systems['arjs'].arController;
+                if (arController) {
+                    arController.addEventListener('track', function(event) {
+                        var intersects = event.data.intersects;
+                        if (intersects.length > 0) {
+                            var intersection = intersects[0];
+                            plane.object3D.position.copy(intersection.point);
+                            plane.setAttribute('visible', 'true');
+                            cube.object3D.position.copy(intersection.point).setY(intersection.point.y + 0.5);
+                        }
+                    });
+                }
+            });
         });
     </script>
 </body>
