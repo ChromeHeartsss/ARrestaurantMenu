@@ -1,34 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>WebXR Support Check</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR.js Marker Example</title>
     <style>
         body { margin: 0; }
+        a-scene { width: 100vw; height: 100vh; }
     </style>
+    <!-- Подключаем A-Frame -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <!-- Подключаем AR.js -->
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 </head>
 <body>
-    <button id="startAR">Start AR</button>
-    <p id="status"></p>
-    <script>
-        document.getElementById('startAR').addEventListener('click', async () => {
-            const statusElement = document.getElementById('status');
-            
-            if (navigator.xr) {
-                try {
-                    const supported = await navigator.xr.isSessionSupported('immersive-ar');
-                    if (supported) {
-                        statusElement.textContent = 'Immersive AR is supported on this device!';
-                    } else {
-                        statusElement.textContent = 'Immersive AR is not supported on this device.';
-                    }
-                } catch (error) {
-                    statusElement.textContent = 'Error checking AR support: ' + error.message;
-                }
-            } else {
-                statusElement.textContent = 'WebXR is not supported.';
-            }
-        });
-    </script>
+    <a-scene embedded>
+        <!-- Определяем маркер Hiro -->
+        <a-marker preset="hiro">
+            <!-- Добавляем 3D-куб на маркер -->
+            <a-box position='0 0.5 0' rotation='0 45 0' color='blue'></a-box>
+        </a-marker>
+        <!-- Камера и контроллеры -->
+        <a-entity camera></a-entity>
+    </a-scene>
 </body>
 </html>
