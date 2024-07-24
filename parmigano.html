@@ -23,39 +23,34 @@
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.xr.enabled = true;
             document.body.appendChild(renderer.domElement);
 
-            // Load a 3D model
-            const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-            const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-            const cube = new THREE.Mesh(geometry, material);
-            cube.name = 'cube';
-
-            // Create reticle
-            const ringGeometry = new THREE.RingGeometry(0.05, 0.06, 32).rotateX(-Math.PI / 2);
-            const ringMaterial = new THREE.MeshBasicMaterial();
-            reticle = new THREE.Mesh(ringGeometry, ringMaterial);
-            reticle.matrixAutoUpdate = false;
-            reticle.visible = false;
-            scene.add(reticle);
-
-            // Setup WebXR
+            // Check for WebXR support
             if (navigator.xr) {
-                const sessionInit = { requiredFeatures: ['hit-test', 'local-floor'] };
-                xrSession = await navigator.xr.requestSession('immersive-ar', sessionInit);
-                renderer.xr.setSession(xrSession);
-
-                // Reference Space
-                const referenceSpace = await xrSession.requestReferenceSpace('local-floor');
-
-                xrSession.requestAnimationFrame((time, frame) => {
-                    // Bind AR hit test
-                    const viewerSpace = referenceSpace;
-                    const hitTestSource = frame.session.requestHitTestSource({
-                        space: viewerSpace
+                try {
+                    xrSession = await navigator.xr.requestSession('immersive-ar', {
+                        requiredFeatures: ['hit-test', 'local-floor']
                     });
-                });
+                    renderer.xr.enabled = true;
+                    renderer.xr.setSession(xrSession);
+                } catch (e) {
+                    console.error('Failed to initialize WebXR:', e);
+                    return;
+                }
+
+                // Load a 3D model
+                const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+                const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                const cube = new THREE.Mesh(geometry, material);
+                cube.name = 'cube';
+
+                // Create reticle
+                const ringGeometry = new THREE.RingGeometry(0.05, 0.06, 32).rotateX(-Math.PI / 2);
+                const ringMaterial = new THREE.MeshBasicMaterial();
+                reticle = new THREE.Mesh(ringGeometry, ringMaterial);
+                reticle.matrixAutoUpdate = false;
+                reticle.visible = false;
+                scene.add(reticle);
 
                 // Set up controller
                 controller = renderer.xr.getController(0);
@@ -69,25 +64,35 @@
                 scene.add(controller);
 
                 renderer.setAnimationLoop(render);
+
+                // Handle hit test
+                xrSession.requestReferenceSpace('local-floor').then(referenceSpace => {
+                    xrSession.requestAnimationFrame((time, frame) => {
+                        frame.getViewerPose(referenceSpace).then(pose => {
+                            if (pose) {
+                                const viewerSpace = frame.session.viewerSpace;
+                                frame.session.requestHitTestSource({ space: viewerSpace }).then(hitTestSource => {
+                                    hitTestSource.results().then(results => {
+                                        if (results.length > 0) {
+                                            const hit = results[0].results[0];
+                                            reticle.visible = true;
+                                            reticle.matrix.fromArray(hit.transform.matrix);
+                                        } else {
+                                            reticle.visible = false;
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                    });
+                });
+
+            } else {
+                console.error('WebXR not supported');
             }
         }
 
         function render() {
-            if (reticle && xrSession) {
-                const frame = renderer.xr.getSession().requestAnimationFrame();
-                const referenceSpace = xrSession.requestReferenceSpace('local-floor');
-                const viewerSpace = frame.session.requestViewerSpace();
-
-                frame.getHitTestResultsForTransientInput(viewerSpace).then((results) => {
-                    if (results.length > 0) {
-                        const hit = results[0].results[0];
-                        reticle.visible = true;
-                        reticle.matrix.fromArray(hit.transform.matrix);
-                    } else {
-                        reticle.visible = false;
-                    }
-                });
-            }
             renderer.render(scene, camera);
         }
 
