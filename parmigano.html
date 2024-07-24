@@ -1,53 +1,54 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Plane Detection Example</title>
+    <title>AR Test</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
-</head>
-<body>
-    <a-scene embedded arjs='sourceType: webcam;'>
-        <!-- Настройка камеры для AR -->
-        <a-marker-camera></a-marker-camera>
-
-        <!-- Плоскостной детектор -->
-        <a-entity id="plane" 
-                  geometry="primitive: plane; height: 1; width: 1"
-                  material="color: #7BC8A4"
-                  position="0 0 0"
-                  visible="false"></a-entity>
-
-        <!-- 3D объект -->
-        <a-entity id="cube"
-                  geometry="primitive: box"
-                  material="color: #4CC3D9"
-                  position="0 0.5 0"
-                  rotation="0 45 0"></a-entity>
+    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.7.2/aframe/build/aframe-ar.js"></script>
+    <style>
+      body { margin: 0; }
+      #arjs-debug { display: none; }
+    </style>
+  </head>
+  <body>
+    <a-scene embedded arjs>
+      <!-- Настройка камеры -->
+      <a-marker-camera preset="hiro"></a-marker-camera>
+      <!-- Настройка плоскости -->
+      <a-entity id="plane" geometry="primitive: plane; width: 1; height: 1" material="color: blue; opacity: 0.5" position="0 0 0" visible="false"></a-entity>
+      <!-- Куб, который будет размещаться на плоскости -->
+      <a-box position="0 0.5 0" rotation="0 45 0" color="red"></a-box>
     </a-scene>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var scene = document.querySelector('a-scene');
-            var plane = document.querySelector('#plane');
-            var cube = document.querySelector('#cube');
+      AFRAME.registerComponent('plane-detector', {
+        init: function () {
+          var scene = document.querySelector('a-scene');
+          var plane = document.getElementById('plane');
+          var box = document.querySelector('a-box');
+          var arController = scene.systems['arjs'].arController;
 
-            scene.addEventListener('loaded', function() {
-                var arController = scene.systems['arjs'].arController;
-                if (arController) {
-                    arController.addEventListener('track', function(event) {
-                        var intersects = event.data.intersects;
-                        if (intersects.length > 0) {
-                            var intersection = intersects[0];
-                            plane.object3D.position.copy(intersection.point);
-                            plane.setAttribute('visible', 'true');
-                            cube.object3D.position.copy(intersection.point).setY(intersection.point.y + 0.5);
-                        }
-                    });
+          if (arController) {
+            arController.addEventListener('load', function () {
+              arController.addEventListener('update', function () {
+                // Метод для определения и установки позиции плоскости
+                var planes = arController.getDetectedPlanes();
+                if (planes.length > 0) {
+                  var planeData = planes[0];
+                  plane.object3D.position.set(planeData.position.x, planeData.position.y, planeData.position.z);
+                  plane.setAttribute('visible', 'true');
+                  // Позиционирование куба на плоскости
+                  box.setAttribute('position', `${planeData.position.x} ${planeData.position.y + 0.5} ${planeData.position.z}`);
+                } else {
+                  plane.setAttribute('visible', 'false');
                 }
+              });
             });
-        });
+          }
+        }
+      });
+
+      document.querySelector('a-scene').setAttribute('plane-detector', '');
     </script>
-</body>
+  </body>
 </html>
