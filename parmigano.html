@@ -1,16 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AR Example</title>
-  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+    <meta charset="UTF-8">
+    <title>AR Surface Detection</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
 </head>
-<body style="margin: 0; overflow: hidden;">
-  <a-scene embedded arjs='sourceType: webcam;'>
-    <a-marker preset="hiro">
-      <a-entity geometry="primitive: box" material="color: red" scale="0.5 0.5 0.5"></a-entity>
-    </a-marker>
-    <a-entity camera></a-entity>
-  </a-scene>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@webxr/ar-module.js"></script>
+    <script>
+        let scene, camera, renderer, model;
+        let xrSession;
+
+        async function init() {
+            // Create scene
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 10);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.xr.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            // Load a 3D model
+            const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+            const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            model = new THREE.Mesh(geometry, material);
+
+            // Request an XR session
+            xrSession = await navigator.xr.requestSession('immersive-ar', {
+                requiredFeatures: ['hit-test', 'local-floor']
+            });
+            renderer.xr.setSession(xrSession);
+
+            xrSession.addEventListener('select', onSelect);
+
+            renderer.setAnimationLoop(render);
+        }
+
+        function onSelect(event) {
+            const frame = event.frame;
+            const referenceSpace = xrSession.getReferenceSpace('local');
+            const hitTestSource = frame.getHitTestResultsForTransientInput({ profiles: ['generic-touchscreen'] });
+
+            if (hitTestSource.length > 0) {
+                const hit = hitTestSource[0];
+                const pose = hit.getPose(referenceSpace);
+
+                if (pose) {
+                    const { x, y, z } = pose.transform.position;
+                    model.position.set(x, y, z);
+                    scene.add(model);
+                }
+            }
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('load', init);
+    </script>
 </body>
 </html>
