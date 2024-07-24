@@ -9,30 +9,31 @@
     </style>
 </head>
 <body>
+    <button id="startAR">Start AR</button>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/VRButton.js"></script>
     <script>
-        // Check if WebXR is supported
-        if (navigator.xr) {
-            // Initialize the scene, camera, and renderer
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ antialias: true });
+        let renderer, scene, camera, cube, controller;
+
+        // Initialize the scene, camera, and renderer
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
-            document.body.appendChild(VRButton.createButton(renderer));
-
+            
             // Add a basic cube to the scene
             const geometry = new THREE.BoxGeometry();
             const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-            const cube = new THREE.Mesh(geometry, material);
+            cube = new THREE.Mesh(geometry, material);
             scene.add(cube);
-
+            
             // Position the camera
             camera.position.z = 5;
-
+            
             // Setup AR tracking
-            const controller = renderer.xr.getController(0);
+            controller = renderer.xr.getController(0);
             scene.add(controller);
 
             // Function to animate the scene
@@ -43,38 +44,40 @@
                 });
             }
 
-            // Start the AR session
-            navigator.xr.requestSession('immersive-ar', {
-                requiredFeatures: ['hit-test', 'local-floor']
-            }).then(function (session) {
-                renderer.xr.setSession(session);
-                animate();
-
-                // Setup hit-test
-                const hitTestSource = new WeakMap();
-                const hitTestSourceRequested = session.requestHitTestSource({ profile: 'unified' });
-                session.requestHitTestSource({ profile: 'unified' }).then(function (source) {
-                    hitTestSource.set(session, source);
+            // Start the AR session on button click
+            document.getElementById('startAR').addEventListener('click', () => {
+                navigator.xr.requestSession('immersive-ar', {
+                    requiredFeatures: ['hit-test', 'local-floor']
+                }).then(function (session) {
+                    renderer.xr.setSession(session);
+                    animate();
+                    
+                    // Setup hit-test
+                    const hitTestSourceRequested = session.requestHitTestSource({ profile: 'unified' });
+                    hitTestSourceRequested.then(function (source) {
+                        session.addEventListener('select', function () {
+                            if (source) {
+                                session.requestHitTest().then(function (hitTestResults) {
+                                    if (hitTestResults.length > 0) {
+                                        const hit = hitTestResults[0];
+                                        const hitPose = hit.getPose(scene.xr.getCamera(camera).projectionMatrix);
+                                        const hitMatrix = new THREE.Matrix4().fromArray(hitPose.transform.matrix);
+                                        cube.position.setFromMatrixPosition(hitMatrix);
+                                    }
+                                });
+                            }
+                        });
+                    }).catch(function (error) {
+                        console.error('Failed to create hit test source:', error);
+                    });
+                }).catch(function (error) {
+                    console.error('AR session could not be started:', error);
                 });
-
-                session.addEventListener('select', function () {
-                    if (hitTestSource.has(session)) {
-                        const hitTestResults = session.requestHitTest();
-                        if (hitTestResults.length > 0) {
-                            const hit = hitTestResults[0];
-                            const hitPose = hit.getPose(scene.xr.getCamera(camera).projectionMatrix);
-                            const hitMatrix = new THREE.Matrix4().fromArray(hitPose.transform.matrix);
-                            cube.position.setFromMatrixPosition(hitMatrix);
-                        }
-                    }
-                });
-            }).catch(function (error) {
-                console.error('AR session could not be started:', error);
             });
-
-        } else {
-            console.log('WebXR is not supported.');
         }
+
+        // Initialize on page load
+        init();
     </script>
 </body>
 </html>
