@@ -11,14 +11,14 @@
 </head>
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@webxr-input-profiles/builder@1.0.0/dist/builder.min.js"></script>
+    <script src="https://unpkg.com/@webxr/three.js"></script>
     <script>
-        let scene, camera, renderer, cube;
+        let scene, camera, renderer, cube, controller;
 
-        function init() {
+        async function init() {
             // Создание сцены
             scene = new THREE.Scene();
-
+            
             // Создание камеры
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.z = 5;
@@ -28,34 +28,42 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            // Создание куба
-            let geometry = new THREE.BoxGeometry();
-            let material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            // Включение WebXR
+            renderer.xr.enabled = true;
+
+            // Добавление куба
+            const geometry = new THREE.BoxGeometry();
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
             cube = new THREE.Mesh(geometry, material);
             scene.add(cube);
 
-            // Настройка WebXR для AR
-            renderer.xr.enabled = true;
+            // Создание контроллера для отслеживания
+            controller = renderer.xr.getController(0);
+            scene.add(controller);
 
-            // Добавление контроля за устройствами ввода
-            navigator.xr.requestDevice()
-                .then(device => {
-                    return device.requestSession({ immersive: true });
-                })
-                .then(session => {
-                    renderer.xr.setSession(session);
-                    animate();
+            // Запуск WebXR-сессии
+            try {
+                const session = await navigator.xr.requestSession('immersive-ar', {
+                    requiredFeatures: ['hit-test', 'dom-overlay'],
+                    domOverlay: { root: document.body }
                 });
+                renderer.xr.setSession(session);
+                animate();
+            } catch (error) {
+                console.error('WebXR не поддерживается или не доступен.', error);
+            }
 
-            // Обработка изменения размеров окна
+            // Обработка изменения размера окна
             window.addEventListener('resize', onWindowResize, false);
         }
 
         function animate() {
             renderer.setAnimationLoop(() => {
-                // Обновление куба и сцены
+                // Анимация куба
                 cube.rotation.x += 0.01;
                 cube.rotation.y += 0.01;
+
+                // Отображение сцены
                 renderer.render(scene, camera);
             });
         }
