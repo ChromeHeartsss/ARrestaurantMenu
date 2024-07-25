@@ -14,9 +14,14 @@
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 </head>
 <body>
-    <a-scene embedded>
-        <a-light type="ambient" color="#fff" intensity="10000"></a-light>
-        <a-light type="directional" color="#fff" position="20 40 10"></a-light>
+    <a-scene embedded arjs>
+        <!-- Отключаем свет, чтобы проверить модель без освещения -->
+        <!--
+        <a-light type="ambient" color="#ffffff" intensity="2.0"></a-light>
+        <a-light type="directional" color="#ffffff" intensity="2.0" position="2 4 1"></a-light>
+        <a-light type="directional" color="#ffffff" intensity="2.0" position="-2 4 -1"></a-light>
+        <a-light type="point" color="#ffffff" intensity="1.5" position="0 2 2"></a-light>
+        -->
 
         <!-- Определяем маркер Hiro -->
         <a-marker preset="hiro">
@@ -24,7 +29,8 @@
             <a-entity 
                 gltf-model="url(https://chromeheartsss.github.io/ARrestaurantMenu/Burger3.glb)" 
                 scale="0.5 0.5 0.5"
-                position="0 0.5 0">
+                position="0 0.5 0"
+                material="shader: flat">
             </a-entity>
         </a-marker>
         <!-- Камера и контроллеры -->
