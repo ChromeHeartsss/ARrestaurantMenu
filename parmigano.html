@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR.js Marker with 3D Model</title>
+    <title>AR.js Marker with Rotating 3D Model</title>
     <style>
         body { margin: 0; }
         a-scene { width: 100vw; height: 100vh; }
@@ -12,22 +12,55 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <!-- Подключаем AR.js -->
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+    <!-- Подключаем Three.js для более точного управления моделями -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
     <a-scene embedded arjs>
         <!-- Определяем маркер Hiro -->
         <a-marker preset="hiro">
-            <!-- Модель, которая не может быть перетащена или вращена -->
+            <!-- Модель, которая будет вращаться вокруг своей оси -->
             <a-entity 
+                id="rotating-model"
                 gltf-model="url(https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb)" 
                 scale="0.5 0.5 0.5"
-                position="0 0 0" 
-                rotation="0 0 0" 
+                position="0 0 0"
+                rotation="0 0 0"
             >
             </a-entity>
         </a-marker>
         <!-- Добавляем камеру для AR -->
         <a-entity camera></a-entity>
     </a-scene>
+
+    <script>
+        // Функция для обработки вращения модели
+        function handleRotation(event) {
+            const model = document.querySelector('#rotating-model');
+            const touchMove = event.touches ? event.touches[0] : event; // Для мобильных и десктопных устройств
+            const deltaX = touchMove.movementX || touchMove.clientX - model.lastX;
+            model.lastX = touchMove.clientX;
+
+            const rotation = model.getAttribute('rotation');
+            rotation.y += deltaX * 0.1; // Скорость вращения модели
+            model.setAttribute('rotation', rotation);
+        }
+
+        document.addEventListener('mousemove', handleRotation);
+        document.addEventListener('mousedown', (event) => {
+            document.addEventListener('mousemove', handleRotation);
+        });
+        document.addEventListener('mouseup', () => {
+            document.removeEventListener('mousemove', handleRotation);
+        });
+
+        document.addEventListener('touchstart', (event) => {
+            model.lastX = event.touches[0].clientX;
+        });
+        document.addEventListener('touchmove', handleRotation);
+        document.addEventListener('touchend', () => {
+            delete model.lastX;
+        });
+    </script>
 </body>
 </html>
