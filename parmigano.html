@@ -12,20 +12,63 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <!-- Подключаем AR.js -->
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+    <script>
+        AFRAME.registerComponent('rotate-on-drag', {
+            schema: {
+                speed: {type: 'number', default: 1}
+            },
+            init: function () {
+                this.el.addEventListener('mousedown', this.startRotate.bind(this));
+                this.el.addEventListener('touchstart', this.startRotate.bind(this));
+                this.rotation = { x: 0, y: 0 };
+                this.dragging = false;
+            },
+            startRotate: function (evt) {
+                this.dragging = true;
+                this.initialMouse = this.getMousePosition(evt);
+                this.el.sceneEl.addEventListener('mousemove', this.rotate.bind(this));
+                this.el.sceneEl.addEventListener('mouseup', this.stopRotate.bind(this));
+                this.el.sceneEl.addEventListener('touchmove', this.rotate.bind(this));
+                this.el.sceneEl.addEventListener('touchend', this.stopRotate.bind(this));
+            },
+            rotate: function (evt) {
+                if (!this.dragging) return;
+                const mouse = this.getMousePosition(evt);
+                const deltaX = mouse.x - this.initialMouse.x;
+                const deltaY = mouse.y - this.initialMouse.y;
+                this.rotation.y += deltaX * this.data.speed;
+                this.rotation.x -= deltaY * this.data.speed;
+                this.el.setAttribute('rotation', this.rotation);
+                this.initialMouse = mouse;
+            },
+            stopRotate: function () {
+                this.dragging = false;
+                this.el.sceneEl.removeEventListener('mousemove', this.rotate.bind(this));
+                this.el.sceneEl.removeEventListener('mouseup', this.stopRotate.bind(this));
+                this.el.sceneEl.removeEventListener('touchmove', this.rotate.bind(this));
+                this.el.sceneEl.removeEventListener('touchend', this.stopRotate.bind(this));
+            },
+            getMousePosition: function (evt) {
+                const rect = this.el.sceneEl.canvas.getBoundingClientRect();
+                const x = evt.clientX - rect.left;
+                const y = evt.clientY - rect.top;
+                return { x, y };
+            }
+        });
+    </script>
 </head>
 <body>
     <a-scene embedded arjs>
         <!-- Определяем маркер Hiro -->
         <a-marker preset="hiro">
-            <!-- Замените URL ниже на URL вашей 3D модели -->
             <a-entity 
                 gltf-model="url(https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb)" 
                 scale="0.5 0.5 0.5"
                 position="0 0.5 0"
-                material="shader: flat">
+                material="shader: flat"
+                rotate-on-drag="speed: 0.5">
             </a-entity>
         </a-marker>
-        <!-- Камера и контроллеры -->
     </a-scene>
 </body>
-</html
+</html>
