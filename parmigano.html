@@ -12,8 +12,8 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <!-- Подключаем AR.js -->
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
-    <!-- Подключаем A-Frame Extras для дополнительных компонентов -->
-    <script src="https://unpkg.com/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
+    <!-- Подключаем Gesture Detector -->
+    <script src="https://unpkg.com/aframe-gesture-detector-component/dist/aframe-gesture-detector-component.min.js"></script>
 </head>
 <body>
     <a-scene embedded arjs>
@@ -30,7 +30,7 @@
                 scale="0.5 0.5 0.5"
                 position="0 0.5 0"
                 material="shader: flat"
-                drag-rotate-component>
+                gesture-rotate>
             </a-entity>
         </a-marker>
         <!-- Камера и контроллеры -->
@@ -38,43 +38,13 @@
     </a-scene>
 
     <script>
-        AFRAME.registerComponent('drag-rotate-component', {
-            schema: { speed: { default: 1 } },
+        AFRAME.registerComponent('gesture-rotate', {
             init: function () {
-                this.ifMouseDown = false;
-                this.previousMousePosition = {};
-                this.handleMouseDown = this.handleMouseDown.bind(this);
-                this.handleMouseMove = this.handleMouseMove.bind(this);
-                this.handleMouseUp = this.handleMouseUp.bind(this);
-                this.el.addEventListener('mousedown', this.handleMouseDown);
-                this.el.addEventListener('mousemove', this.handleMouseMove);
-                window.addEventListener('mouseup', this.handleMouseUp);
-                this.el.addEventListener('touchstart', this.handleMouseDown);
-                this.el.addEventListener('touchmove', this.handleMouseMove);
-                window.addEventListener('touchend', this.handleMouseUp);
-            },
-            handleMouseDown: function (event) {
-                this.ifMouseDown = true;
-                this.previousMousePosition = {
-                    x: event.touches ? event.touches[0].clientX : event.clientX,
-                    y: event.touches ? event.touches[0].clientY : event.clientY
-                };
-            },
-            handleMouseMove: function (event) {
-                if (!this.ifMouseDown) return;
-                const currentPosition = {
-                    x: event.touches ? event.touches[0].clientX : event.clientX,
-                    y: event.touches ? event.touches[0].clientY : event.clientY
-                };
-                const deltaX = currentPosition.x - this.previousMousePosition.x;
-                const deltaY = currentPosition.y - this.previousMousePosition.y;
-                this.previousMousePosition = currentPosition;
-                const rotation = this.el.getAttribute('rotation');
-                rotation.y += deltaX * this.data.speed;
-                this.el.setAttribute('rotation', rotation);
-            },
-            handleMouseUp: function () {
-                this.ifMouseDown = false;
+                const el = this.el;
+                el.setAttribute('gesture-detector', '');
+                el.addEventListener('gesturemovestart', function (event) {
+                    el.object3D.rotation.y += event.detail.rotation * Math.PI / 180;
+                });
             }
         });
     </script>
