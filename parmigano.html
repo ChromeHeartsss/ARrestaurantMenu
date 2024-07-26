@@ -14,15 +14,41 @@
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
     <!-- Подключаем Gesture Detector -->
     <script src="https://unpkg.com/aframe-gesture-detector-component/dist/aframe-gesture-detector-component.min.js"></script>
-    <!-- Подключаем Super Hands -->
-    <script src="https://unpkg.com/aframe-super-hands/dist/aframe-super-hands.min.js"></script>
+    <script>
+        AFRAME.registerComponent('rotation-listener', {
+            schema: {
+                rotationSpeed: { type: 'number', default: 1 }
+            },
+            init: function () {
+                this.rotation = 0;
+                this.el.sceneEl.addEventListener('onefingerstart', this.onFingerStart.bind(this));
+                this.el.sceneEl.addEventListener('onefingermove', this.onFingerMove.bind(this));
+                this.el.sceneEl.addEventListener('onefingerend', this.onFingerEnd.bind(this));
+            },
+            onFingerStart: function (evt) {
+                this.startX = evt.detail.position.x;
+            },
+            onFingerMove: function (evt) {
+                const deltaX = evt.detail.position.x - this.startX;
+                this.rotation += deltaX * this.data.rotationSpeed;
+                this.el.setAttribute('rotation', { x: 0, y: this.rotation, z: 0 });
+                this.startX = evt.detail.position.x;
+            },
+            onFingerEnd: function () {
+                this.startX = null;
+            }
+        });
+    </script>
 </head>
 <body>
-    <a-scene embedded arjs>
-        <!-- Ambient light для общего освещения -->
+    <a-scene embedded arjs gesture-detector>
+        <!-- Отключаем свет, чтобы проверить модель без освещения -->
+        <!--
         <a-light type="ambient" color="#ffffff" intensity="2.0"></a-light>
-        <!-- Directional light для направления света -->
         <a-light type="directional" color="#ffffff" intensity="2.0" position="2 4 1"></a-light>
+        <a-light type="directional" color="#ffffff" intensity="2.0" position="-2 4 -1"></a-light>
+        <a-light type="point" color="#ffffff" intensity="1.5" position="0 2 2"></a-light>
+        -->
 
         <!-- Определяем маркер Hiro -->
         <a-marker preset="hiro">
@@ -32,15 +58,11 @@
                 scale="0.5 0.5 0.5"
                 position="0 0.5 0"
                 material="shader: flat"
-                class="clickable"
-                rotation="0 0 0"
-                event-set__dragstart="_event: dragstart; _target: #camera; rotation: 0 0 0"
-                event-set__dragmove="_event: dragmove; _target: #camera; rotation: 0 0 0"
-                event-set__dragend="_event: dragend; _target: #camera; rotation: 0 0 0">
+                rotation-listener>
             </a-entity>
         </a-marker>
         <!-- Камера и контроллеры -->
-        <a-entity camera="exposure: 4" id="camera"></a-entity>
+        <a-entity camera="exposure: 4"></a-entity>
     </a-scene>
 </body>
 </html>
