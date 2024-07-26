@@ -12,16 +12,15 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <!-- Подключаем AR.js -->
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+    <!-- Подключаем A-Frame Extras для дополнительных компонентов -->
+    <script src="https://unpkg.com/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
 </head>
 <body>
     <a-scene embedded arjs>
-        <!-- Отключаем свет, чтобы проверить модель без освещения -->
-        <!--
+        <!-- Ambient light для общего освещения -->
         <a-light type="ambient" color="#ffffff" intensity="2.0"></a-light>
+        <!-- Directional light для направления света -->
         <a-light type="directional" color="#ffffff" intensity="2.0" position="2 4 1"></a-light>
-        <a-light type="directional" color="#ffffff" intensity="2.0" position="-2 4 -1"></a-light>
-        <a-light type="point" color="#ffffff" intensity="1.5" position="0 2 2"></a-light>
-        -->
 
         <!-- Определяем маркер Hiro -->
         <a-marker preset="hiro">
@@ -30,11 +29,43 @@
                 gltf-model="url(https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb)" 
                 scale="0.5 0.5 0.5"
                 position="0 0.5 0"
-                material="shader: flat">
+                material="shader: flat"
+                rotation-listener>
             </a-entity>
         </a-marker>
         <!-- Камера и контроллеры -->
         <a-entity camera="exposure: 4"></a-entity>
     </a-scene>
+
+    <script>
+        // Добавляем компонент rotation-listener
+        AFRAME.registerComponent('rotation-listener', {
+            init: function () {
+                this.el.addEventListener('mousedown', this.startRotate.bind(this));
+                this.el.addEventListener('touchstart', this.startRotate.bind(this));
+                this.el.addEventListener('mouseup', this.stopRotate.bind(this));
+                this.el.addEventListener('touchend', this.stopRotate.bind(this));
+                this.el.addEventListener('mousemove', this.rotate.bind(this));
+                this.el.addEventListener('touchmove', this.rotate.bind(this));
+                this.rotating = false;
+            },
+            startRotate: function (event) {
+                this.rotating = true;
+                this.lastX = event.touches ? event.touches[0].clientX : event.clientX;
+            },
+            stopRotate: function () {
+                this.rotating = false;
+            },
+            rotate: function (event) {
+                if (!this.rotating) return;
+                const currentX = event.touches ? event.touches[0].clientX : event.clientX;
+                const deltaX = currentX - this.lastX;
+                this.lastX = currentX;
+                const rotation = this.el.getAttribute('rotation');
+                rotation.y += deltaX * 0.5;
+                this.el.setAttribute('rotation', rotation);
+            }
+        });
+    </script>
 </body>
 </html>
