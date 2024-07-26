@@ -30,7 +30,7 @@
                 scale="0.5 0.5 0.5"
                 position="0 0.5 0"
                 material="shader: flat"
-                rotation-listener>
+                drag-rotate-component>
             </a-entity>
         </a-marker>
         <!-- Камера и контроллеры -->
@@ -38,32 +38,43 @@
     </a-scene>
 
     <script>
-        // Добавляем компонент rotation-listener
-        AFRAME.registerComponent('rotation-listener', {
+        AFRAME.registerComponent('drag-rotate-component', {
+            schema: { speed: { default: 1 } },
             init: function () {
-                this.el.addEventListener('mousedown', this.startRotate.bind(this));
-                this.el.addEventListener('touchstart', this.startRotate.bind(this));
-                this.el.addEventListener('mouseup', this.stopRotate.bind(this));
-                this.el.addEventListener('touchend', this.stopRotate.bind(this));
-                this.el.addEventListener('mousemove', this.rotate.bind(this));
-                this.el.addEventListener('touchmove', this.rotate.bind(this));
-                this.rotating = false;
+                this.ifMouseDown = false;
+                this.previousMousePosition = {};
+                this.handleMouseDown = this.handleMouseDown.bind(this);
+                this.handleMouseMove = this.handleMouseMove.bind(this);
+                this.handleMouseUp = this.handleMouseUp.bind(this);
+                this.el.addEventListener('mousedown', this.handleMouseDown);
+                this.el.addEventListener('mousemove', this.handleMouseMove);
+                window.addEventListener('mouseup', this.handleMouseUp);
+                this.el.addEventListener('touchstart', this.handleMouseDown);
+                this.el.addEventListener('touchmove', this.handleMouseMove);
+                window.addEventListener('touchend', this.handleMouseUp);
             },
-            startRotate: function (event) {
-                this.rotating = true;
-                this.lastX = event.touches ? event.touches[0].clientX : event.clientX;
+            handleMouseDown: function (event) {
+                this.ifMouseDown = true;
+                this.previousMousePosition = {
+                    x: event.touches ? event.touches[0].clientX : event.clientX,
+                    y: event.touches ? event.touches[0].clientY : event.clientY
+                };
             },
-            stopRotate: function () {
-                this.rotating = false;
-            },
-            rotate: function (event) {
-                if (!this.rotating) return;
-                const currentX = event.touches ? event.touches[0].clientX : event.clientX;
-                const deltaX = currentX - this.lastX;
-                this.lastX = currentX;
+            handleMouseMove: function (event) {
+                if (!this.ifMouseDown) return;
+                const currentPosition = {
+                    x: event.touches ? event.touches[0].clientX : event.clientX,
+                    y: event.touches ? event.touches[0].clientY : event.clientY
+                };
+                const deltaX = currentPosition.x - this.previousMousePosition.x;
+                const deltaY = currentPosition.y - this.previousMousePosition.y;
+                this.previousMousePosition = currentPosition;
                 const rotation = this.el.getAttribute('rotation');
-                rotation.y += deltaX * 0.5;
+                rotation.y += deltaX * this.data.speed;
                 this.el.setAttribute('rotation', rotation);
+            },
+            handleMouseUp: function () {
+                this.ifMouseDown = false;
             }
         });
     </script>
