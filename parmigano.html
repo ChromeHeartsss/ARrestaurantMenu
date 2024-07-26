@@ -24,13 +24,14 @@
               this.startX = 0;
               console.log('Rotation Listener initialized');
               this.el.addEventListener('touchstart', this.onTouchStart.bind(this));
-              this.el.addEventListener('touchmove', this.onTouchMove.bind(this));
+              this.el.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
           },
           onTouchStart: function (evt) {
               this.startX = evt.touches[0].clientX;
               console.log('Touch start at:', this.startX);
           },
           onTouchMove: function (evt) {
+              evt.preventDefault(); // Предотвращает прокрутку страницы
               const deltaX = evt.touches[0].clientX - this.startX;
               console.log('Touch move, deltaX:', deltaX);
               this.rotation += deltaX * this.data.rotationSpeed;
@@ -39,7 +40,7 @@
               this.startX = evt.touches[0].clientX; // Обновляем начальную позицию
           }
       });
-  </script>    
+    </script>    
 </head>
 <body>
     <a-scene embedded arjs>
