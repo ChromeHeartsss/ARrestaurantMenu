@@ -12,64 +12,22 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <!-- Подключаем AR.js -->
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
-    
-    <!-- Определяем компонент model-rotation перед сценой -->
-    <script>
-        AFRAME.registerComponent('model-rotation', {
-            schema: {
-                type: 'number',
-                default: 0
-            },
-            init: function () {
-                this.isDragging = false;
-                this.lastX = 0;
-
-                this.el.sceneEl.addEventListener('mousedown', (event) => this.startDrag(event));
-                this.el.sceneEl.addEventListener('mousemove', (event) => this.onDrag(event));
-                this.el.sceneEl.addEventListener('mouseup', () => this.stopDrag());
-
-                this.el.sceneEl.addEventListener('touchstart', (event) => this.startDrag(event));
-                this.el.sceneEl.addEventListener('touchmove', (event) => this.onDrag(event));
-                this.el.sceneEl.addEventListener('touchend', () => this.stopDrag());
-            },
-            startDrag: function (event) {
-                event.preventDefault(); // Предотвращаем стандартное действие
-                this.isDragging = true;
-                this.lastX = event.clientX || event.touches[0].clientX;
-            },
-            onDrag: function (event) {
-                if (this.isDragging) {
-                    event.preventDefault(); // Предотвращаем стандартное действие
-                    let newX = event.clientX || event.touches[0].clientX;
-                    let deltaX = newX - this.lastX;
-                    let rotation = this.el.getAttribute('rotation');
-                    rotation.y += deltaX * 0.2; // Коэффициент чувствительности
-                    this.el.setAttribute('rotation', rotation);
-                    this.lastX = newX;
-                }
-            },
-            stopDrag: function () {
-                this.isDragging = false;
-            }
-        });
-    </script>
 </head>
 <body>
     <a-scene embedded arjs>
         <!-- Определяем маркер Hiro -->
         <a-marker preset="hiro">
-            <!-- Родительский объект для фиксации -->
-            <a-entity id="model-container" position="0 0.5 0" rotation="0 0 0">
-                <!-- Модель с кастомным компонентом вращения -->
-                <a-entity 
-                    id="model"
-                    gltf-model="url(https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb)" 
-                    scale="0.5 0.5 0.5"
-                    rotation="0 0 0"
-                    model-rotation>
-                </a-entity>
+            <!-- Модель, которая не может быть перетащена или вращена -->
+            <a-entity 
+                gltf-model="url(https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb)" 
+                scale="0.5 0.5 0.5"
+                position="0 0 0" 
+                rotation="0 0 0" 
+            >
             </a-entity>
         </a-marker>
+        <!-- Добавляем камеру для AR -->
+        <a-entity camera></a-entity>
     </a-scene>
 </body>
 </html>
