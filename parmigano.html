@@ -15,22 +15,23 @@
     <!-- Подключаем Gesture Detector -->
     <script src="https://unpkg.com/aframe-gesture-detector-component/dist/aframe-gesture-detector-component.min.js"></script>
     <script>
-        AFRAME.registerComponent('rotation-listener', {
-            schema: {
-                rotationSpeed: { type: 'number', default: 1 }
-            },
-            init: function () {
-                this.rotation = 0;
-                this.startX = 0;
-                this.el.addEventListener('onefingermove', this.onFingerMove.bind(this));
-            },
-            onFingerMove: function (evt) {
-                const deltaX = evt.detail.positionChange.x;
-                this.rotation += deltaX * this.data.rotationSpeed;
-                this.el.setAttribute('rotation', { x: 0, y: this.rotation, z: 0 });
-            }
-        });
-    </script>
+      AFRAME.registerComponent('rotation-listener', {
+          schema: {
+              rotationSpeed: { type: 'number', default: 1 }
+          },
+          init: function () {
+              this.rotation = 0;
+              this.el.addEventListener('onefingermove', this.onFingerMove.bind(this));
+          },
+          onFingerMove: function (evt) {
+              const deltaX = evt.detail.positionChange.x;
+              this.rotation += deltaX * this.data.rotationSpeed;
+              // Ограничение вращения по оси Y от 0 до 360 градусов
+              this.rotation = (this.rotation + 360) % 360;
+              this.el.setAttribute('rotation', { x: 0, y: this.rotation, z: 0 });
+          }
+      });
+  </script>  
 </head>
 <body>
     <a-scene embedded arjs>
@@ -46,12 +47,11 @@
         <a-marker preset="hiro">
             <!-- Замените URL ниже на URL вашей 3D модели -->
             <a-entity 
-                gltf-model="url(https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb)" 
-                scale="0.5 0.5 0.5"
-                position="0 0.5 0"
-                material="shader: flat"
-                gesture-detector
-                rotation-listener>
+              gltf-model="url(https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb)" 
+              scale="0.5 0.5 0.5"
+              position="0 0.5 0"
+              material="shader: flat"
+              rotation-listener>
             </a-entity>
         </a-marker>
         <!-- Камера и контроллеры -->
