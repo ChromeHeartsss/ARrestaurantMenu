@@ -17,7 +17,7 @@
     <a-scene embedded arjs>
         <!-- Определяем маркер Hiro -->
         <a-marker preset="hiro">
-            <!-- Модель, которая будет вращаться вокруг своей оси Z -->
+            <!-- Модель, которая будет вращаться вокруг своей оси Y -->
             <a-entity 
                 id="rotating-model"
                 gltf-model="url(https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb)" 
@@ -43,7 +43,7 @@
             lastX = touchMove.clientX;
 
             const rotation = model.getAttribute('rotation');
-            rotation.z -= deltaX * 0.1; // Изменение вращения по оси Z
+            rotation.y -= deltaX * 0.5; // Изменение вращения по оси Y
             model.setAttribute('rotation', rotation);
         }
 
@@ -63,7 +63,6 @@
         document.addEventListener('mouseup', stopRotation);
         document.addEventListener('touchstart', startRotation);
         document.addEventListener('touchend', stopRotation);
-
     </script>
 </body>
 </html>
