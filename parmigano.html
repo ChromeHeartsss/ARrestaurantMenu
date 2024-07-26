@@ -18,16 +18,54 @@
         <!-- Определяем маркер Hiro -->
         <a-marker preset="hiro">
             <!-- Родительский объект для фиксации -->
-            <a-entity position="0 0.5 0">
-                <!-- Модель вращается вокруг своей оси -->
+            <a-entity id="model-container" position="0 0.5 0">
+                <!-- Модель без автоматического вращения -->
                 <a-entity 
+                    id="model"
                     gltf-model="url(https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb)" 
                     scale="0.5 0.5 0.5"
-                    rotation="0 0 0"
-                    animation__rotation="property: rotation; to: 0 360 0; loop: true; dur: 5000">
+                    rotation="0 0 0">
                 </a-entity>
             </a-entity>
         </a-marker>
     </a-scene>
+
+    <script>
+        AFRAME.registerComponent('model-rotation', {
+            schema: {
+                default: 0,
+                type: 'number'
+            },
+            init: function () {
+                this.isDragging = false;
+                this.lastX = 0;
+                this.el.sceneEl.addEventListener('mousedown', (event) => this.startDrag(event));
+                this.el.sceneEl.addEventListener('mousemove', (event) => this.onDrag(event));
+                this.el.sceneEl.addEventListener('mouseup', () => this.stopDrag());
+                this.el.sceneEl.addEventListener('touchstart', (event) => this.startDrag(event));
+                this.el.sceneEl.addEventListener('touchmove', (event) => this.onDrag(event));
+                this.el.sceneEl.addEventListener('touchend', () => this.stopDrag());
+            },
+            startDrag: function (event) {
+                this.isDragging = true;
+                this.lastX = event.clientX || event.touches[0].clientX;
+            },
+            onDrag: function (event) {
+                if (this.isDragging) {
+                    let newX = event.clientX || event.touches[0].clientX;
+                    let deltaX = newX - this.lastX;
+                    let rotation = this.el.getAttribute('rotation');
+                    rotation.y += deltaX * 0.2; // Коэффициент чувствительности
+                    this.el.setAttribute('rotation', rotation);
+                    this.lastX = newX;
+                }
+            },
+            stopDrag: function () {
+                this.isDragging = false;
+            }
+        });
+
+        document.querySelector('#model-container').setAttribute('model-rotation', {});
+    </script>
 </body>
 </html>
