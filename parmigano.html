@@ -17,8 +17,8 @@
     <script>
         AFRAME.registerComponent('model-rotation', {
             schema: {
-                default: 0,
-                type: 'number'
+                type: 'number',
+                default: 0
             },
             init: function () {
                 this.isDragging = false;
@@ -59,13 +59,14 @@
         <!-- Определяем маркер Hiro -->
         <a-marker preset="hiro">
             <!-- Родительский объект для фиксации -->
-            <a-entity id="model-container" position="0 0.5 0">
-                <!-- Модель без автоматического вращения -->
+            <a-entity id="model-container" position="0 0.5 0" rotation="0 0 0">
+                <!-- Модель с кастомным компонентом вращения -->
                 <a-entity 
                     id="model"
                     gltf-model="url(https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb)" 
                     scale="0.5 0.5 0.5"
-                    rotation="0 0 0">
+                    rotation="0 0 0"
+                    model-rotation>
                 </a-entity>
             </a-entity>
         </a-marker>
