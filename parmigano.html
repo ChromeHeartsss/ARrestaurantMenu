@@ -21,17 +21,25 @@
           },
           init: function () {
               this.rotation = 0;
-              this.el.addEventListener('onefingermove', this.onFingerMove.bind(this));
+              this.startX = 0;
+              console.log('Rotation Listener initialized');
+              this.el.addEventListener('touchstart', this.onTouchStart.bind(this));
+              this.el.addEventListener('touchmove', this.onTouchMove.bind(this));
           },
-          onFingerMove: function (evt) {
-              const deltaX = evt.detail.positionChange.x;
+          onTouchStart: function (evt) {
+              this.startX = evt.touches[0].clientX;
+              console.log('Touch start at:', this.startX);
+          },
+          onTouchMove: function (evt) {
+              const deltaX = evt.touches[0].clientX - this.startX;
+              console.log('Touch move, deltaX:', deltaX);
               this.rotation += deltaX * this.data.rotationSpeed;
-              // Ограничение вращения по оси Y от 0 до 360 градусов
               this.rotation = (this.rotation + 360) % 360;
               this.el.setAttribute('rotation', { x: 0, y: this.rotation, z: 0 });
+              this.startX = evt.touches[0].clientX; // Обновляем начальную позицию
           }
       });
-  </script>  
+  </script>    
 </head>
 <body>
     <a-scene embedded arjs>
