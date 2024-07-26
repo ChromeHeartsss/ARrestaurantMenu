@@ -12,6 +12,47 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <!-- Подключаем AR.js -->
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+    
+    <!-- Определяем компонент model-rotation перед сценой -->
+    <script>
+        AFRAME.registerComponent('model-rotation', {
+            schema: {
+                default: 0,
+                type: 'number'
+            },
+            init: function () {
+                this.isDragging = false;
+                this.lastX = 0;
+
+                this.el.sceneEl.addEventListener('mousedown', (event) => this.startDrag(event));
+                this.el.sceneEl.addEventListener('mousemove', (event) => this.onDrag(event));
+                this.el.sceneEl.addEventListener('mouseup', () => this.stopDrag());
+
+                this.el.sceneEl.addEventListener('touchstart', (event) => this.startDrag(event));
+                this.el.sceneEl.addEventListener('touchmove', (event) => this.onDrag(event));
+                this.el.sceneEl.addEventListener('touchend', () => this.stopDrag());
+            },
+            startDrag: function (event) {
+                event.preventDefault(); // Предотвращаем стандартное действие
+                this.isDragging = true;
+                this.lastX = event.clientX || event.touches[0].clientX;
+            },
+            onDrag: function (event) {
+                if (this.isDragging) {
+                    event.preventDefault(); // Предотвращаем стандартное действие
+                    let newX = event.clientX || event.touches[0].clientX;
+                    let deltaX = newX - this.lastX;
+                    let rotation = this.el.getAttribute('rotation');
+                    rotation.y += deltaX * 0.2; // Коэффициент чувствительности
+                    this.el.setAttribute('rotation', rotation);
+                    this.lastX = newX;
+                }
+            },
+            stopDrag: function () {
+                this.isDragging = false;
+            }
+        });
+    </script>
 </head>
 <body>
     <a-scene embedded arjs>
@@ -29,43 +70,5 @@
             </a-entity>
         </a-marker>
     </a-scene>
-
-    <script>
-        AFRAME.registerComponent('model-rotation', {
-            schema: {
-                default: 0,
-                type: 'number'
-            },
-            init: function () {
-                this.isDragging = false;
-                this.lastX = 0;
-                this.el.sceneEl.addEventListener('mousedown', (event) => this.startDrag(event));
-                this.el.sceneEl.addEventListener('mousemove', (event) => this.onDrag(event));
-                this.el.sceneEl.addEventListener('mouseup', () => this.stopDrag());
-                this.el.sceneEl.addEventListener('touchstart', (event) => this.startDrag(event));
-                this.el.sceneEl.addEventListener('touchmove', (event) => this.onDrag(event));
-                this.el.sceneEl.addEventListener('touchend', () => this.stopDrag());
-            },
-            startDrag: function (event) {
-                this.isDragging = true;
-                this.lastX = event.clientX || event.touches[0].clientX;
-            },
-            onDrag: function (event) {
-                if (this.isDragging) {
-                    let newX = event.clientX || event.touches[0].clientX;
-                    let deltaX = newX - this.lastX;
-                    let rotation = this.el.getAttribute('rotation');
-                    rotation.y += deltaX * 0.2; // Коэффициент чувствительности
-                    this.el.setAttribute('rotation', rotation);
-                    this.lastX = newX;
-                }
-            },
-            stopDrag: function () {
-                this.isDragging = false;
-            }
-        });
-
-        document.querySelector('#model-container').setAttribute('model-rotation', {});
-    </script>
 </body>
 </html>
