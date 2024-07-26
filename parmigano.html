@@ -21,27 +21,19 @@
             },
             init: function () {
                 this.rotation = 0;
-                this.el.sceneEl.addEventListener('onefingerstart', this.onFingerStart.bind(this));
-                this.el.sceneEl.addEventListener('onefingermove', this.onFingerMove.bind(this));
-                this.el.sceneEl.addEventListener('onefingerend', this.onFingerEnd.bind(this));
-            },
-            onFingerStart: function (evt) {
-                this.startX = evt.detail.position.x;
+                this.startX = 0;
+                this.el.addEventListener('onefingermove', this.onFingerMove.bind(this));
             },
             onFingerMove: function (evt) {
-                const deltaX = evt.detail.position.x - this.startX;
+                const deltaX = evt.detail.positionChange.x;
                 this.rotation += deltaX * this.data.rotationSpeed;
                 this.el.setAttribute('rotation', { x: 0, y: this.rotation, z: 0 });
-                this.startX = evt.detail.position.x;
-            },
-            onFingerEnd: function () {
-                this.startX = null;
             }
         });
     </script>
 </head>
 <body>
-    <a-scene embedded arjs gesture-detector>
+    <a-scene embedded arjs>
         <!-- Отключаем свет, чтобы проверить модель без освещения -->
         <!--
         <a-light type="ambient" color="#ffffff" intensity="2.0"></a-light>
@@ -58,6 +50,7 @@
                 scale="0.5 0.5 0.5"
                 position="0 0.5 0"
                 material="shader: flat"
+                gesture-detector
                 rotation-listener>
             </a-entity>
         </a-marker>
