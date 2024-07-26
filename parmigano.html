@@ -14,6 +14,8 @@
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
     <!-- Подключаем Gesture Detector -->
     <script src="https://unpkg.com/aframe-gesture-detector-component/dist/aframe-gesture-detector-component.min.js"></script>
+    <!-- Подключаем Super Hands -->
+    <script src="https://unpkg.com/aframe-super-hands/dist/aframe-super-hands.min.js"></script>
 </head>
 <body>
     <a-scene embedded arjs>
@@ -30,23 +32,15 @@
                 scale="0.5 0.5 0.5"
                 position="0 0.5 0"
                 material="shader: flat"
-                gesture-rotate>
+                class="clickable"
+                rotation="0 0 0"
+                event-set__dragstart="_event: dragstart; _target: #camera; rotation: 0 0 0"
+                event-set__dragmove="_event: dragmove; _target: #camera; rotation: 0 0 0"
+                event-set__dragend="_event: dragend; _target: #camera; rotation: 0 0 0">
             </a-entity>
         </a-marker>
         <!-- Камера и контроллеры -->
-        <a-entity camera="exposure: 4"></a-entity>
+        <a-entity camera="exposure: 4" id="camera"></a-entity>
     </a-scene>
-
-    <script>
-        AFRAME.registerComponent('gesture-rotate', {
-            init: function () {
-                const el = this.el;
-                el.setAttribute('gesture-detector', '');
-                el.addEventListener('gesturemovestart', function (event) {
-                    el.object3D.rotation.y += event.detail.rotation * Math.PI / 180;
-                });
-            }
-        });
-    </script>
 </body>
 </html>
