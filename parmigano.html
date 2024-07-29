@@ -86,7 +86,7 @@
         // Function to switch models
         function switchModel(event) {
             const modelUrl = event.target.getAttribute('data-model-url');
-            model.setAttribute('gltf-model', `url(${modelUrl})`);
+            model.setAttribute('gltf-model', modelUrl);
         }
 
         // Add event listeners to model selector buttons
