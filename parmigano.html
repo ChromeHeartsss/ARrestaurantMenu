@@ -7,6 +7,19 @@
     <style>
         body { margin: 0; }
         a-scene { width: 100vw; height: 100vh; }
+        .model-selector {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .model-selector button {
+            padding: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
     </style>
     <!-- Подключаем A-Frame -->
     <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
@@ -30,6 +43,12 @@
         <!-- Добавляем камеру для AR -->
         <a-entity camera></a-entity>
     </a-scene>
+
+    <div class="model-selector">
+        <button data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb">Model 1</button>
+        <button data-model-url="https://example.com/path/to/your/model2.glb">Model 2</button>
+        <button data-model-url="https://example.com/path/to/your/model3.glb">Model 3</button>
+    </div>
 
     <script>
         const model = document.querySelector('#rotating-model');
@@ -63,6 +82,18 @@
         document.addEventListener('mouseup', stopRotation);
         document.addEventListener('touchstart', startRotation);
         document.addEventListener('touchend', stopRotation);
+
+        // Function to switch models
+        function switchModel(event) {
+            const modelUrl = event.target.getAttribute('data-model-url');
+            model.setAttribute('gltf-model', `url(${modelUrl})`);
+        }
+
+        // Add event listeners to model selector buttons
+        const buttons = document.querySelectorAll('.model-selector button');
+        buttons.forEach(button => {
+            button.addEventListener('click', switchModel);
+        });
     </script>
 </body>
 </html>
