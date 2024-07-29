@@ -7,6 +7,31 @@
     <style>
         body { margin: 0; }
         a-scene { width: 100vw; height: 100vh; }
+        #infoMessage {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 10;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #startButton {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
     </style>
     <!-- Подключаем A-Frame -->
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
@@ -14,6 +39,14 @@
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 </head>
 <body>
+    <div id="infoMessage">
+        <div>
+            <h2>Внимание!</h2>
+            <p>Для работы этого приложения необходим доступ к вашей камере. Пожалуйста, разрешите доступ к камере, когда будет запрошено.</p>
+            <button id="startButton">Начать</button>
+        </div>
+    </div>
+
     <a-scene embedded arjs vr-mode-ui="enabled: false">
         <!-- Определяем маркер Hiro -->
         <a-marker preset="hiro">
@@ -33,6 +66,20 @@
 
     <script>
         const model = document.querySelector('#rotating-model');
+        const infoMessage = document.getElementById('infoMessage');
+        const startButton = document.getElementById('startButton');
+
+        startButton.addEventListener('click', () => {
+            infoMessage.style.display = 'none';
+
+            navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+                // После получения доступа к камере можно запустить AR.js сцену
+                document.querySelector('a-scene').style.display = 'block';
+            }).catch((err) => {
+                alert('Не удалось получить доступ к камере: ' + err);
+            });
+        });
+
         let lastX = null;
 
         function handleRotation(event) {
