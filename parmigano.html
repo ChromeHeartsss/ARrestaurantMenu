@@ -14,9 +14,9 @@
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 </head>
 <body>
-    <a-scene embedded arjs='trackingMethod: best;' embedded arjs="debugUIEnabled: true;">
-        <!-- Определяем маркер с пользовательским паттерном -->
-        <a-marker type="pattern" url="https://chromeheartsss.github.io/ARrestaurantMenu/pattern.patt">
+    <a-scene embedded arjs vr-mode-ui="enabled: false">
+        <!-- Определяем маркер Hiro -->
+        <a-marker preset="image" url="https://chromeheartsss.github.io/ARrestaurantMenu/pattern.patt">
             <!-- Модель, которая будет вращаться вокруг своей оси Y -->
             <a-entity 
                 id="rotating-model"
@@ -64,15 +64,5 @@
         document.addEventListener('touchstart', startRotation);
         document.addEventListener('touchend', stopRotation);
     </script>
-    <script>
-        document.querySelector('a-marker').addEventListener('markerFound', function() {
-            console.log('Marker found!');
-        });
-        
-        document.querySelector('a-marker').addEventListener('markerLost', function() {
-            console.log('Marker lost!');
-        });
-    </script>
-    
 </body>
 </html>
