@@ -20,16 +20,16 @@
             display: inline-block;
         }
         .model-selector button {
-            padding: 10px;
-            font-size: 14px;
+            width: 100px;
+            height: 100px;
+            background-size: cover;
+            background-position: center;
             cursor: pointer;
             display: inline-block;
             margin: 0 5px;
             background-color: rgba(0, 0, 0, 0.7); /* Полупрозрачный черный фон */
-            color: white;
             border: none;
             border-radius: 10px; /* Закругленные края */
-            white-space: normal;
             transition: background-color 0.3s;
         }
         .model-selector button:hover {
@@ -71,15 +71,32 @@
 
     <div class="model-selector-container">
         <div class="model-selector">
-            <button data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb">Model 1</button>
-            <button data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/Cake.glb">Model 2</button>
-            <button data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/skovorodka.glb">Model 3</button>
+            <button data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb"
+                style="background-image: url('https://chromeheartsss.github.io/ARrestaurantMenu/burgermin.png');">
+                <!-- Убедитесь, что изображение миниатюры доступно по этой ссылке -->
+            </button>
+            <button data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/Cake.glb"
+                style="background-image: url('https://chromeheartsss.github.io/ARrestaurantMenu/cakemin.png');">
+            </button>
+            <button data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/skovorodka.glb"
+                style="background-image: url('https://chromeheartsss.github.io/ARrestaurantMenu/skovorodkamin.png');">
+            </button>
             <!-- Добавьте больше кнопок здесь -->
-            <button data-model-url="https://example.com/path/to/your/model4.glb">Model 4</button>
-            <button data-model-url="https://example.com/path/to/your/model5.glb">Model 5</button>
-            <button data-model-url="https://example.com/path/to/your/model6.glb">Model 6</button>
-            <button data-model-url="https://example.com/path/to/your/model7.glb">Model 7</button>
-            <button data-model-url="https://example.com/path/to/your/model8.glb">Model 8</button>
+            <button data-model-url="https://example.com/path/to/your/model4.glb"
+                style="background-image: url('https://example.com/path/to/thumbnail4.jpg');">
+            </button>
+            <button data-model-url="https://example.com/path/to/your/model5.glb"
+                style="background-image: url('https://example.com/path/to/thumbnail5.jpg');">
+            </button>
+            <button data-model-url="https://example.com/path/to/your/model6.glb"
+                style="background-image: url('https://example.com/path/to/thumbnail6.jpg');">
+            </button>
+            <button data-model-url="https://example.com/path/to/your/model7.glb"
+                style="background-image: url('https://example.com/path/to/thumbnail7.jpg');">
+            </button>
+            <button data-model-url="https://example.com/path/to/your/model8.glb"
+                style="background-image: url('https://example.com/path/to/thumbnail8.jpg');">
+            </button>
         </div>
     </div>
 
