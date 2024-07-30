@@ -12,7 +12,7 @@
             bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
-            width: 90%; 
+            width: 90%;
             overflow-x: auto;
             white-space: nowrap;
         }
@@ -25,7 +25,15 @@
             cursor: pointer;
             display: inline-block;
             margin: 0 5px;
+            background-color: rgba(0, 0, 0, 0.7); /* Полупрозрачный черный фон */
+            color: white;
+            border: none;
+            border-radius: 10px; /* Закругленные края */
             white-space: normal;
+            transition: background-color 0.3s;
+        }
+        .model-selector button:hover {
+            background-color: rgba(0, 0, 0, 0.9); /* Меняется цвет фона при наведении */
         }
         .model-selector::-webkit-scrollbar {
             height: 8px;
