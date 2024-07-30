@@ -15,6 +15,11 @@
             width: 90%;
             overflow-x: auto;
             white-space: nowrap;
+            scrollbar-width: none; /* Для Firefox */
+            -ms-overflow-style: none; /* Для Internet Explorer и Edge */
+        }
+        .model-selector-container::-webkit-scrollbar {
+            display: none; /* Для Chrome, Safari и Opera */
         }
         .model-selector {
             display: inline-block;
