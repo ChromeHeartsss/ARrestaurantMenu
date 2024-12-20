@@ -1,305 +1,260 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, height=device-height, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>AR Restaurant Menu</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      a-scene {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        z-index: 1;
+      }
+      .model-selector-container,
+      #make-order-container {
+        position: fixed;
+        z-index: 2; /* Поднимаем выше слоя сцены */
+      }
+      .model-selector-container {
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none; /* Для Firefox */
+        -ms-overflow-style: none; /* Для Internet Explorer и Edge */
+      }
+      .model-selector-container::-webkit-scrollbar {
+        display: none; /* Для Chrome, Safari и Opera */
+      }
+      .model-selector button {
+        width: 90px;
+        height: 90px;
+        background-size: cover;
+        background-position: center;
+        cursor: pointer;
+        display: inline-block;
+        margin: 0 5px;
+        background-color: rgba(0, 0, 0, 0.404);
+        border: none;
+        border-radius: 10px;
+        transition: background-color 0.3s;
+      }
+      .model-selector button:hover {
+        background-color: rgba(0, 0, 0, 0.603);
+      }
+      #make-order-container {
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+      }
+      #make-order {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+      }
+      #make-order:hover {
+        background-color: #0056b3;
+      }
+    </style>
+    <!-- Подключаем A-Frame -->
+    <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+    <!-- Подключаем AR.js -->
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  </head>
+  <body>
+    <a-scene embedded arjs vr-mode-ui="enabled: false">
+      <a-marker
+        type="pattern"
+        url="https://chromeheartsss.github.io/ARrestaurantMenu/tsipatt.patt"
+      >
+        <a-entity
+          id="rotating-model"
+          gltf-model="url(https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb)"
+          scale="0.5 0.5 0.5"
+          position="0 0 0"
+          rotation="0 0 0"
+        ></a-entity>
+      </a-marker>
+      <a-entity camera></a-entity>
+    </a-scene>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>AR Restaurant Menu</title>
-  <style>
-    body {
-      margin: 0;
-    }
-
-    a-scene {
-      width: 100vw;
-      height: 100vh;
-    }
-
-    .model-selector-container {
-      position: fixed;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
-      overflow-x: auto;
-      white-space: nowrap;
-      scrollbar-width: none;
-      /* Для Firefox */
-      -ms-overflow-style: none;
-      /* Для Internet Explorer и Edge */
-    }
-
-    .model-selector-container::-webkit-scrollbar {
-      display: none;
-      /* Для Chrome, Safari и Opera */
-    }
-
-    .model-selector {
-      display: inline-block;
-    }
-
-    .model-selector button {
-      width: 90px;
-      height: 90px;
-      background-size: cover;
-      background-position: center;
-      cursor: pointer;
-      display: inline-block;
-      margin: 0 5px;
-      background-color: rgba(0, 0, 0, 0.404);
-      /* Полупрозрачный черный фон */
-      border: none;
-      border-radius: 10px;
-      /* Закругленные края */
-      transition: background-color 0.3s;
-    }
-
-    .model-selector button:hover {
-      background-color: rgba(0,
-          0,
-          0,
-          0.603);
-      /* Меняется цвет фона при наведении */
-    }
-
-    .model-selector::-webkit-scrollbar {
-      height: 8px;
-    }
-
-    .model-selector::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 4px;
-    }
-
-    .model-selector::-webkit-scrollbar-thumb:hover {
-      background: #555;
-    }
-
-    .order-button {
-      padding: 15px 30px;
-      font-size: 18px;
-      font-weight: bold;
-      color: white;
-      background-color: #007bff;
-      /* Синий цвет */
-      border: none;
-      border-radius: 10px;
-      /* Закругленные края */
-      cursor: pointer;
-      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-      /* Тень */
-      transition: background-color 0.3s, transform 0.2s;
-      /* Плавные переходы */
-    }
-
-    .order-button:hover {
-      background-color: #0056b3;
-      /* Более тёмный синий при наведении */
-      transform: translateY(-2px);
-      /* Лёгкий подъём кнопки */
-    }
-
-    .order-button:active {
-      background-color: #003f7f;
-      /* Ещё темнее при нажатии */
-      transform: translateY(2px);
-      /* Имитирует нажатие */
-    }
-  </style>
-  <!-- Подключаем A-Frame -->
-  <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
-  <!-- Подключаем AR.js -->
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-</head>
-
-<body>
-  <a-scene embedded arjs vr-mode-ui="enabled: false">
-    <!-- Определяем маркер Hiro -->
-    <a-marker type="pattern" url="https://chromeheartsss.github.io/ARrestaurantMenu/tsipatt.patt">
-      <!-- Модель, которая будет вращаться вокруг своей оси Y -->
-      <a-entity id="rotating-model" gltf-model="url(https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb)"
-        scale="0.5 0.5 0.5" position="0 0 0" rotation="0 0 0">
-      </a-entity>
-    </a-marker>
-    <!-- Добавляем камеру для AR -->
-    <a-entity camera></a-entity>
-  </a-scene>
-
-  <div class="model-selector-container">
-    <div class="model-selector">
-      <button data-model-id="burger" data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb"
-        style="
+    <div class="model-selector-container">
+      <div class="model-selector">
+        <button
+          data-model-id="burger"
+          data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/Burger4.glb"
+          style="
             background-image: url('https://chromeheartsss.github.io/ARrestaurantMenu/burgermin.png');
-          ">
-        <!-- Убедитесь, что изображение миниатюры доступно по этой ссылке -->
-      </button>
-      <button data-model-id="cake" data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/Cake.glb" style="
+          "
+        ></button>
+        <button
+          data-model-id="cake"
+          data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/Cake.glb"
+          style="
             background-image: url('https://chromeheartsss.github.io/ARrestaurantMenu/cakemin.png');
-          "></button>
-      <button data-model-id="skovorodka"
-        data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/skovorodka.glb" style="
+          "
+        ></button>
+        <button
+          data-model-id="skovorodka"
+          data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/skovorodka.glb"
+          style="
             background-image: url('https://chromeheartsss.github.io/ARrestaurantMenu/skovorodkamin.png');
-          "></button>
-      <!-- Добавьте больше кнопок здесь -->
-      <button data-model-id="skovorodka"
-        data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/skovorodka.glb" style="
-            background-image: url('https://chromeheartsss.github.io/ARrestaurantMenu/skovorodkamin.png');
-          "></button>
-      <button data-model-id="skovorodka"
-        data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/skovorodka.glb" style="
-            background-image: url('https://chromeheartsss.github.io/ARrestaurantMenu/skovorodkamin.png');
-          "></button>
-      <button data-model-id="skovorodka"
-        data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/skovorodka.glb" style="
-            background-image: url('https://chromeheartsss.github.io/ARrestaurantMenu/skovorodkamin.png');
-          "></button>
-      <button data-model-id="skovorodka"
-        data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/skovorodka.glb" style="
-            background-image: url('https://chromeheartsss.github.io/ARrestaurantMenu/skovorodkamin.png');
-          "></button>
-      <button data-model-id="skovorodka"
-        data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/skovorodka.glb" style="
-            background-image: url('https://chromeheartsss.github.io/ARrestaurantMenu/skovorodkamin.png');
-          "></button>
-      <button data-model-id="skovorodka"
-        data-model-url="https://chromeheartsss.github.io/ARrestaurantMenu/skovorodka.glb" style="
-            background-image: url('https://chromeheartsss.github.io/ARrestaurantMenu/skovorodkamin.png');
-          "></button>
+          "
+        ></button>
+      </div>
     </div>
-  </div>
-  <div style="text-align: center; margin-top: 20px;">
-    <button id="make-order" class="order-button">
-      Place Order
-    </button>
-  </div>
-  <script>
-    const model = document.querySelector("#rotating-model");
-    let lastX = null;
+    <div id="make-order-container">
+      <button id="make-order">Place Order</button>
+    </div>
 
-    function handleRotation(event) {
-      if (lastX === null) return;
+    <script>
+      const model = document.querySelector("#rotating-model");
+      let lastX = null;
 
-      const touchMove = event.touches ? event.touches[0] : event;
-      const deltaX = touchMove.clientX - lastX;
-      lastX = touchMove.clientX;
+      function handleRotation(event) {
+        if (lastX === null) return;
 
-      const rotation = model.getAttribute("rotation");
-      rotation.y -= deltaX * 0.5; // Изменение вращения по оси Y
-      model.setAttribute("rotation", rotation);
-    }
+        const touchMove = event.touches ? event.touches[0] : event;
+        const deltaX = touchMove.clientX - lastX;
+        lastX = touchMove.clientX;
 
-    function startRotation(event) {
-      lastX = event.touches ? event.touches[0].clientX : event.clientX;
-      document.addEventListener("mousemove", handleRotation);
-      document.addEventListener("touchmove", handleRotation);
-    }
+        const rotation = model.getAttribute("rotation");
+        rotation.y -= deltaX * 0.5; // Изменение вращения по оси Y
+        model.setAttribute("rotation", rotation);
+      }
 
-    function stopRotation() {
-      lastX = null;
-      document.removeEventListener("mousemove", handleRotation);
-      document.removeEventListener("touchmove", handleRotation);
-    }
+      function startRotation(event) {
+        lastX = event.touches ? event.touches[0].clientX : event.clientX;
+        document.addEventListener("mousemove", handleRotation);
+        document.addEventListener("touchmove", handleRotation);
+      }
 
-    document.addEventListener("mousedown", startRotation);
-    document.addEventListener("mouseup", stopRotation);
-    document.addEventListener("touchstart", startRotation);
-    document.addEventListener("touchend", stopRotation);
+      function stopRotation() {
+        lastX = null;
+        document.removeEventListener("mousemove", handleRotation);
+        document.removeEventListener("touchmove", handleRotation);
+      }
 
-    // Function to switch models
-    function switchModel(event) {
-      const modelUrl = event.target.getAttribute("data-model-url");
-      model.setAttribute("gltf-model", modelUrl);
-    }
+      document.addEventListener("mousedown", startRotation);
+      document.addEventListener("mouseup", stopRotation);
+      document.addEventListener("touchstart", startRotation);
+      document.addEventListener("touchend", stopRotation);
 
-    // Add event listeners to model selector buttons
-    const buttons = document.querySelectorAll(".model-selector button");
-    buttons.forEach((button) => {
-      button.addEventListener("click", switchModel);
-    });
-  </script>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getDatabase, ref, set, push } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+      // Function to switch models
+      function switchModel(event) {
+        const modelUrl = event.target.getAttribute("data-model-url");
+        model.setAttribute("gltf-model", modelUrl);
+      }
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyD3TTT15Dz7g6ZO1H3up_UhQbxURiMBMzA",
-      authDomain: "arrestaurantmenu-52f2e.firebaseapp.com",
-      projectId: "arrestaurantmenu-52f2e",
-      storageBucket: "arrestaurantmenu-52f2e.firebasestorage.app",
-      messagingSenderId: "510431647558",
-      appId: "1:510431647558:web:61c38127c51d3267d8b747",
-    };
-
-    // Инициализация Firebase
-    let database;
-    try {
-      const app = initializeApp(firebaseConfig);
-      database = getDatabase(
-        app,
-        "https://arrestaurantmenu-52f2e-default-rtdb.europe-west1.firebasedatabase.app"
-      );
-      console.log("Firebase успешно инициализирован");
-    } catch (error) {
-      console.error("Ошибка инициализации Firebase:", error);
-    }
-
-    // Список моделей
-    const models = {
-      burger: "Бургер",
-      cake: "Торт",
-      skovorodka: "Сковородка",
-    };
-
-    // Текущая выбранная модель
-    let selectedModelId = "burger";
-
-    // Обновляем выбранную модель при нажатии на кнопки карусели
-    const modelButtons = document.querySelectorAll(".model-selector button"); // Изменено имя переменной
-    modelButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        selectedModelId = button.getAttribute("data-model-id");
-        console.log("Выбранная модель:", selectedModelId);
+      // Add event listeners to model selector buttons
+      const buttons = document.querySelectorAll(".model-selector button");
+      buttons.forEach((button) => {
+        button.addEventListener("click", switchModel);
       });
-    });
-
-    // Функция для отправки заказа
-    function sendOrder() {
-      const ordersRef = ref(database, "orders");
-      const timestamp = new Date().toISOString();
-      const formattedTimestamp = new Date(timestamp).toLocaleString('ru-RU', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-      const orderData = {
-        message: "Новый заказ",
-        timestamp: formattedTimestamp,
-        model: models[selectedModelId] || "Неизвестное блюдо",
+    </script>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+      import { getDatabase, ref, set, push } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+  
+      const firebaseConfig = {
+        apiKey: "AIzaSyD3TTT15Dz7g6ZO1H3up_UhQbxURiMBMzA",
+        authDomain: "arrestaurantmenu-52f2e.firebaseapp.com",
+        projectId: "arrestaurantmenu-52f2e",
+        storageBucket: "arrestaurantmenu-52f2e.firebasestorage.app",
+        messagingSenderId: "510431647558",
+        appId: "1:510431647558:web:61c38127c51d3267d8b747",
       };
-
-      push(ordersRef, orderData)
-        .then(() => {
-          console.log("Заказ успешно отправлен:", orderData);
-        })
-        .catch((error) => {
-          console.error("Ошибка при отправке заказа:", error);
+  
+      // Инициализация Firebase
+      let database;
+      try {
+        const app = initializeApp(firebaseConfig);
+        database = getDatabase(
+          app,
+          "https://arrestaurantmenu-52f2e-default-rtdb.europe-west1.firebasedatabase.app"
+        );
+        console.log("Firebase успешно инициализирован");
+      } catch (error) {
+        console.error("Ошибка инициализации Firebase:", error);
+      }
+  
+      // Список моделей
+      const models = {
+        burger: "Бургер",
+        cake: "Торт",
+        skovorodka: "Сковородка",
+      };
+  
+      // Текущая выбранная модель
+      let selectedModelId = "burger";
+  
+      // Обновляем выбранную модель при нажатии на кнопки карусели
+      const modelButtons = document.querySelectorAll(".model-selector button"); // Изменено имя переменной
+      modelButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          selectedModelId = button.getAttribute("data-model-id");
+          console.log("Выбранная модель:", selectedModelId);
         });
-    }
-
-    // Привязываем отправку заказа к кнопке "Сделать заказ"
-    const orderButton = document.querySelector("#make-order");
-    if (orderButton) {
-      orderButton.addEventListener("click", sendOrder);
-    } else {
-      console.error('Кнопка с ID "make-order" не найдена в DOM');
-    }
-
-  </script>
-
-</body>
-
+      });
+  
+      // Функция для отправки заказа
+      function sendOrder() {
+        const ordersRef = ref(database, "orders");
+        const timestamp = new Date().toISOString();
+        const formattedTimestamp = new Date(timestamp).toLocaleString('ru-RU', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+        const orderData = {
+          message: "Новый заказ",
+          timestamp: formattedTimestamp,
+          model: models[selectedModelId] || "Неизвестное блюдо",
+        };
+  
+        push(ordersRef, orderData)
+          .then(() => {
+            console.log("Заказ успешно отправлен:", orderData);
+          })
+          .catch((error) => {
+            console.error("Ошибка при отправке заказа:", error);
+          });
+      }
+  
+      // Привязываем отправку заказа к кнопке "Сделать заказ"
+      const orderButton = document.querySelector("#make-order");
+      if (orderButton) {
+        orderButton.addEventListener("click", sendOrder);
+      } else {
+        console.error('Кнопка с ID "make-order" не найдена в DOM');
+      }
+  
+    </script>
+  </body>
 </html>
